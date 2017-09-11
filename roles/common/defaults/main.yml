@@ -5,3 +5,5 @@ unprivileged_uid: 1000
 
 
 prompt_prefix: "NWN2 "
+
+swap_file_path: /swapfile

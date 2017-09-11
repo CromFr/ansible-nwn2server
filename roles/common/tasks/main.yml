@@ -14,7 +14,7 @@
 
 - name: Swap
   import_tasks: swap.yml size=2G
-
+  when: ansible_swaptotal_mb == 0
 
 - name: "UFW: allow SSH"
   ufw:
