@@ -16,11 +16,6 @@
   import_tasks: swap.yml size=2G
   when: ansible_swaptotal_mb == 0
 
-- name: "UFW: allow SSH"
-  ufw:
-    rule: allow
-    name: OpenSSH
-
 - name: "UFW: rate-limit SSH"
   ufw:
     rule: limit
