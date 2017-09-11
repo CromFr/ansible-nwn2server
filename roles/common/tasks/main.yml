@@ -50,11 +50,7 @@
   import_tasks: oh-my-zsh.yml user={{unprivileged_user}} theme='crom-purple'
 
 
-- name: Deactivate snapd
-  systemd:
-    name: "{{item}}"
-    state: stopped
-    enabled: no
-  with_items:
-    - snapd.socket
-    - snapd.service
+- name: uninstall snapd
+  apt:
+    name: snapd
+    state: absent
