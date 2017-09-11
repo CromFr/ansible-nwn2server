@@ -18,15 +18,16 @@
     src: "{{item}}"
     dest: "{{nwn2_path_root}}/nwnx4/"
     mode: 755
-  with_fileglob:
-    - /tmp/nwnx4/*.exe
+  with_items:
+    - /tmp/nwnx4/NWNX4_Controller.exe
+    - /tmp/nwnx4/NWNX4_GUI.exe
     - /tmp/nwnx4/xp_mysql.dll
     - /tmp/nwnx4/xp_time.dll
 
 - name: Install nwnx4 config files
   template:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4/{{item | basename | splitext[0]}}"
+    dest: "{{nwn2_path_root}}/nwnx4/{{(item | basename | splitext)[0]}}"
     mode: 0644
   with_items:
     - nwnx.ini.j2
