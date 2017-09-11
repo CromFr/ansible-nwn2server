@@ -1,0 +1,9 @@
+#!/bin/bash
+
+MSG=`echo -n "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'`
+
+curl -s \
+	-H "Content-Type: application/json" \
+	-X POST \
+	-d "{\"content\": $MSG}" \
+	{{discord_webhook}}

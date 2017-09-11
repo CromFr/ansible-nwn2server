@@ -1,0 +1,7 @@
+
+
+- name: Write nwn2player.ini
+  template:
+    src: nwn2player.ini.j2
+    dest: "{{nwn2_path_home}}"
+    mode: 0644

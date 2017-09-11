@@ -1,0 +1,15 @@
+
+staging/
+*.sublime-workspace
+
+# Ansible files
+*.retry
+wap
+
+# Sensitive templates
+templates/*.j2
+!templates/*.example.j2
+
+# Inventory file
+inventory
+hosts

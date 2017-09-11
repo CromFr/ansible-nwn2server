@@ -1,0 +1,26 @@
+
+- name: Install MySQL package
+  apt:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - mariadb-server
+    - python-mysqldb
+
+- name: Start & enable MySQL service
+  systemd:
+    name: mysql.service
+    state: started
+    enabled: yes
+
+- name: Add nwnx table
+  mysql_db:
+    name: nwnx
+    state: present
+
+- name: Add MySQL User
+  mysql_user:
+    name: "{{mysql_user}}"
+    host: localhost
+    password: "{{mysql_password}}"
+    priv: "{{mysql_database}}.*:ALL"

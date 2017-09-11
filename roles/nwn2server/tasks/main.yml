@@ -1,0 +1,43 @@
+
+
+
+
+- name: NWN2Server folder creation
+  file:
+    path: "{{item}}"
+    owner: "{{unprivileged_user}}"
+    group: "{{unprivileged_user}}"
+    state: directory
+  with_items:
+    - "{{nwn2_path_root}}"
+    - "{{nwn2_path_root}}/bin"
+    - "{{nwn2_path_root}}/logs"
+    - "{{nwn2_path_root}}/nwnx4"
+    - "{{nwn2_path_home}}"
+    - "{{nwn2_path_home}}/servervault"
+
+# Shares
+- import_tasks: servervault-mount.yml
+- import_tasks: nfs-server.yml
+
+# MySQL server
+- import_tasks: sql.yml
+
+# Virtualization
+- import_tasks: qemu.yml
+
+# NWNX4
+- import_tasks: nwnx4.yml
+
+# Backup tools
+- import_tasks: backup.yml
+  when: backup_server != ""
+
+- name: Check if nwn2 has populated servervault
+  command: "ls {{nwn2_path_home}}/servervault/"
+  register: ls_servervault
+  when: backup_server != ""
+
+- name: Restore backups
+  command: "{{nwn2_path_root}}/bin/backup-restore"
+  when: ls_servervault.stdout == "" and backup_server != ""

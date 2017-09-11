@@ -1,0 +1,36 @@
+# Main site
+
+
+- name: Install PHP & PHP-MySQL
+  apt:
+    name: "{{item}}"
+  with_items:
+    - php-fpm
+    - php-mysql
+
+- name: Enable & Start PHP FPM
+  systemd:
+    name: php7.0-fpm.service
+    state: started
+    enabled: yes
+
+
+- name: Home Caddy config with PHP CGI
+  blockinfile:
+    path: /etc/Caddyfile
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: Home"
+    content: |
+      {{home_listen}} {
+        root /srv/http
+
+        fastcgi / unix:///run/php/php7.0-fpm.sock php
+        markdown / {
+          ext .md
+        }
+
+        browse /download
+        header /download/playerloginx2.xml {
+          Content-disposition attachment
+        }
+      }
+  notify: reload caddy

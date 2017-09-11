@@ -1,0 +1,65 @@
+---
+- name: Packages install
+  apt:
+    name: "{{item}}"
+  with_items:
+    - git
+    - tree
+    - htop
+    - curl
+    - wget
+    - unzip
+    - ufw
+
+
+- name: Swap
+  import_tasks: swap.yml size=2G
+
+
+- name: "UFW: allow SSH"
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: "UFW: rate-limit SSH"
+  ufw:
+    rule: limit
+    name: OpenSSH
+
+- name: "UFW: enable"
+  ufw:
+    state: enabled
+
+
+- name: NWN2 tools
+  import_tasks: nwn-tools.yml
+
+
+- name: Unprivileged group setup
+  group:
+    name: "{{unprivileged_user}}"
+    gid: "{{unprivileged_uid}}"
+- name: Unprivileged user setup
+  user:
+    name: "{{unprivileged_user}}"
+    uid: "{{unprivileged_uid}}"
+    group: "{{unprivileged_user}}"
+- authorized_key:
+    user: "{{unprivileged_user}}"
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: ZSH + OhMyZsh for root user
+  import_tasks: oh-my-zsh.yml user=root theme='crom-red'
+
+- name: ZSH + OhMyZsh for {{unprivileged_user}} user
+  import_tasks: oh-my-zsh.yml user={{unprivileged_user}} theme='crom-purple'
+
+
+- name: Deactivate snapd
+  systemd:
+    name: "{{item}}"
+    state: stopped
+    enabled: no
+  with_items:
+    - snapd.socket
+    - snapd.service

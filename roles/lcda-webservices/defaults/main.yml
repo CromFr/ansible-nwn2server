@@ -1,0 +1,25 @@
+
+
+unprivileged_user: nwn2
+
+caddy_plugins:
+  - http.cgi
+  - http.cors
+  - http.git
+
+
+home_listen: "yourdomain.com"
+
+accountmanager_listen: "account.{{home_listen}}"
+accountmanager_port: 8081
+
+publicapi_listen: "api.{{home_listen}}"
+publicapi_port: 8080
+
+adl_listen: "adl.{{home_listen}}"
+adl_path: /srv/adl
+
+
+mysql_database: "nwnx"
+mysql_user: "nwnx"
+mysql_password: "password"

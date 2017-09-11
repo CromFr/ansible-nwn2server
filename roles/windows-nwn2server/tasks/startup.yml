@@ -1,0 +1,12 @@
+
+
+
+- name: Install startup script
+  win_template:
+    src: nwn2server-start.bat.j2
+    dest: '%USERPROFILE%\Desktop\nwn2server-start.bat'
+
+- name: Create Startup script shortcut
+  win_shortcut:
+    src: '%USERPROFILE%\Desktop\nwn2server-start.bat'
+    dest: '%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\nwn2server-start.lnk'

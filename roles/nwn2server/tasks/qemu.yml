@@ -1,0 +1,44 @@
+
+
+- name: Qemu Packages install
+  apt:
+    name: "{{item}}"
+  with_items:
+    - qemu
+    - qemu-kvm
+
+- name: Check if qemu disk exists
+  command: "ls {{nwn2_path_root}}/nwn2server-vmdisk.raw"
+  # stat:
+  #   path: "{{nwn2_path_root}}/nwn2server-vmdisk.raw"
+  register: stat_result
+
+- name: QEmu disk image creation
+  command: qemu-img create -f raw "{{nwn2_path_root}}/nwn2server-vmdisk.raw" 15G
+  when: stat_result.rc != 0
+
+# TODO: install windows when: stat_result.stat.exists == False
+
+- name: Copy nwn2server launch script
+  template:
+    src: qemu-launch.j2
+    dest: "{{nwn2_path_root}}/bin/launch"
+    mode: 0755
+
+- name: Copy nwn2server service file
+  template:
+    src: nwn2server@.service.j2
+    dest: /etc/systemd/system/nwn2server@.service
+    mode: 0644
+
+- name: Enable nwn2server
+  systemd:
+    name: "nwn2server@{{nwn2_path_root | basename}}.service"
+    # state: started
+    enabled: yes
+
+- name: "UFW: Enable NWN2Server port"
+  ufw:
+    rule: allow
+    port: "{{nwn2_server_port}}"
+    proto: udp

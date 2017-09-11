@@ -1,0 +1,90 @@
+#!/bin/bash
+
+if [ $USER != "{{unprivileged_user}}" ]; then
+	echo "You must run this script with {{unprivileged_user}} user"
+	exit 1
+fi
+
+set -e
+
+NWN_HOME={{nwn2_path_home}}
+LCDACLIENTSRC={{clientsrc_path}}
+LCDADEV={{module_path}}
+
+# Load ssh key
+eval $(ssh-agent)
+ssh-add {{git_keyfile}}
+
+
+echo -e "\e[1;30;46m=========================== Update & install module ===========================\e[0m"
+
+moduleinstaller --name Lcda $LCDADEV $NWN_HOME
+
+
+echo -e "\e[1;30;46m============================ Update LcdaClientSrc =============================\e[0m"
+cd $LCDACLIENTSRC
+git pull origin master
+
+echo "$PWD/tlk/ -> $NWN_HOME/"
+rm -rf $NWN_HOME/tlk/ || true
+cp -R tlk/         $NWN_HOME/
+echo "$PWD/lcda2da.hak/ -> $NWN_HOME/override/"
+rm -rf $NWN_HOME/override/lcda2da.hak/ || true
+cp -R lcda2da.hak/ $NWN_HOME/override/
+
+
+echo -e "\e[1;30;46m=============================== Generating haks ===============================\e[0m"
+if [[ ! -d out ]]; then
+	mkdir out
+fi
+
+for dir in *.hak; do
+	if [[ -d $dir ]]; then
+		echo "========> $dir"
+		FILE="out/`basename $dir`"
+		nwn-erf create -o $FILE $dir
+	fi
+done
+
+
+echo -e "\e[1;30;46m====================== Update moduledownloaderresources =======================\e[0m"
+
+stagingtool -o $NWN_HOME/override/moduledownloaderresources.xml /srv/adl/ \
+	$LCDADEV \
+	$LCDACLIENTSRC/music \
+	$LCDACLIENTSRC/tlk \
+	$LCDACLIENTSRC/out
+
+
+echo -e "\e[1;30;46m====================== Upload files to download servers =======================\e[0m"
+
+ssh-add {{adl_remote_keyfile}}
+rsync -a --delete --bwlimit={{adl_remote_speedlimit}} --progress {{adl_path}} {{adl_remote_user}}@{{adl_remote}}:{{adl_remote_path}}
+
+
+echo -e "\e[1;30;46m========================= Online tag & notifications ==========================\e[0m"
+
+cd $LCDADEV
+LCDADEV_MSG=`git log --reverse --format='%B%N' Online..HEAD | sed -nE 's/^updatemsg:\s*(.+)$/- \1/p'`
+git tag -f Online -m "`date`"
+git push -f origin Online
+
+cd $LCDACLIENTSRC
+LCDACLIENTSRC_MSG=`git log --reverse --format='%B%N' Online..HEAD | sed -nE 's/^updatemsg:\s*(.+)$/- \1/p'`
+git tag -f Online -m "`date`"
+git push -f origin Online
+
+MSG="**Mise à jour du serveur:**
+$LCDADEV_MSG
+$LCDACLIENTSRC_MSG"
+
+if [ "$LCDADEV_MSG" != "" || "$LCDACLIENTSRC_MSG" != "" ]; then
+	{% if discord_webhook != "" %}
+	discord-send-message "$MSG"
+	{% endif %}
+
+	echo "$MSG"
+fi
+
+
+echo -e "\e[1;30;46m==================================== DONE =====================================\e[0m"

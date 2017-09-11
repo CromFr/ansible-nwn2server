@@ -1,0 +1,58 @@
+
+- name: Public API packages install
+  apt: name={{item}}
+  with_items:
+    - redis-server
+    - libevent-pthreads*
+
+- name: Start & enable redis server
+  systemd:
+    name: redis.service
+    state: started
+    enabled: yes
+
+- name: Public API binary install
+  copy:
+    src: "{{playbook_dir}}/staging/LcdaAccountManager/lcdaapi"
+    dest: /usr/local/bin/public-api
+    mode: 0755
+
+- name: Create public api config folder
+  file:
+    path: /srv/api
+    state: directory
+
+- name: Public API config install
+  template:
+    src: public-api.config.json.j2
+    dest: /srv/api/config.json
+    mode: 0644
+
+- name: Public API dialog.tlk install
+  copy:
+    src: "{{playbook_dir}}/staging/nwn2server/dialog.TLK"
+    dest: /srv/api/dialog.tlk
+    mode: 644
+
+- name: Add Caddy public api reverse proxy config
+  blockinfile:
+    path: /etc/Caddyfile
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: public-api"
+    content: |
+      {{publicapi_listen}} {
+        proxy / 127.0.0.1:{{publicapi_port}}
+        cors
+      }
+  notify: reload caddy
+
+- name: Public API service file
+  template:
+    src: public-api.service.j2
+    dest: /etc/systemd/system/public-api.service
+    mode: 0644
+
+- name: Start & enable Public API service
+  systemd:
+    name: public-api.service
+    state: started
+    enabled: yes

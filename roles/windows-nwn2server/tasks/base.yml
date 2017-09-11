@@ -1,0 +1,54 @@
+
+
+- name: Windows Update
+  win_updates:
+    state: installed
+  when: windows_update == True
+
+- name: Install windows features
+  win_feature:
+    name: "{{item}}"
+  with_items:
+    - NFS-Client
+    - RSAT-NFS-Admin
+    - NET-Framework-Core
+    - Desktop-Experience
+
+
+- name: Install chocolatey packages
+  win_chocolatey:
+    name: "{{item}}"
+  with_items:
+    - autologon
+    - psexec
+    - vcredist2005
+    - vcredist2010
+    - directx
+
+
+- name: Spice guest tools
+  win_package:
+    path: "https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe"
+    arguments: "/S"
+    creates_path: 'C:\Program Files (x86)\SPICE Guest Tools'
+    creates_service: vdservice
+
+
+- name: Disable startup repair
+  win_command: "{{item}}"
+  with_items:
+    - "bcdedit /set {default} recoveryenabled No"
+    - "bcdedit /set {default} bootstatuspolicy ignoreallfailures"
+
+
+- name: Setup Autologon
+  win_command: autologon Administrator WORKGROUP {{ansible_password}}
+
+
+- name: Wallpaper color
+  win_regedit:
+    path: 'HKCU:\Control Panel\Colors'
+    name: Background
+    type: string
+    data: "86 63 127"
+  when: production == true

@@ -1,0 +1,48 @@
+
+- name: Download nwnx archive
+  get_url:
+    url: "http://nwnx.org/typo3conf/ext/nf_downloads/pi1/passdownload.php?downloaddata=13"
+    sha256sum: 8edf659b8a411e593ad6aae3650d8788df6d29c5d4cfed64fa49255c2e74e35c
+    dest: /tmp/nwnx4.zip
+
+- name: Unzip nwnx
+  unarchive:
+    src: /tmp/nwnx4.zip
+    dest: /tmp
+    creates: /tmp/nwnx4
+
+- name: Create nwnx4 folder
+  file:
+    path: "{{nwn2_path_root}}/nwnx4"
+    state: directory
+    owner: "{{unprivileged_user}}"
+
+- name: Install nwnx files
+  copy:
+    remote_src: true
+    src: "{{item}}"
+    dest: "{{nwn2_path_root}}/nwnx4/"
+    mode: 755
+  with_fileglob:
+    - /tmp/nwnx4/*.exe
+    - /tmp/nwnx4/xp_mysql.dll
+    - /tmp/nwnx4/xp_time.dll
+
+- name: Install nwnx4 config files
+  template:
+    src: "{{item}}"
+    dest: "{{nwn2_path_root}}/nwnx4/{{item | basename}}"
+    mode: 0644
+  with_items:
+    - nwnx.ini.j2
+    - xp_mysql.ini.j2
+
+- name: Install additional nwnx4 plugins (ini and dll files only)
+  copy:
+    src: "{{item.src}}"
+    dest: "{{nwn2_path_root}}/nwnx4"
+    mode: "{{(item | splitext)[1] == '.dll' | ternary(755, 644)}}"
+  with_fileglob:
+    - "{{playbook_dir}}/staging/nwnx4_plugins/*.ini"
+    - "{{playbook_dir}}/staging/nwnx4_plugins/*.dll"
+

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+exec \
+qemu-system-x86_64 \
+	-name "NWN2Server" \
+	-runas {{unprivileged_user}} \
+	\
+	-enable-kvm \
+	-cpu host \
+	-smp cores=1,threads=1,sockets=1 \
+	-m 2.5G \
+	\
+	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.raw",format=raw,if=virtio \
+	\
+	-device virtio-net-pci,netdev=net0 \
+	-netdev user,id=net0,hostname=nwn2server,hostfwd=udp:0.0.0.0:{{nwn2_server_port}}-:{{nwn2_server_port}},hostfwd=tcp:127.0.0.1:5985-:5985 \
+	\
+	-device piix3-usb-uhci \
+	-device pvpanic \
+	\
+	-vga qxl \
+	-spice addr=127.0.0.1,port={{qemu_spice_port}},disable-ticketing \
+	-device usb-tablet \
+	-device virtio-serial \
+	-chardev spicevmc,id=vdagent,name=vdagent \
+	-device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
+	\
+	-monitor telnet:127.0.0.1:{{qemu_monitor_port}},server,nowait \
+	$@

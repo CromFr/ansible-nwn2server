@@ -1,0 +1,23 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"build_systems":
+	[
+		{
+			"name": "Project",
+
+			"working_dir": "${project_path}",
+			"file_regex": "'(.+?)': line (\\d+), column (\\d+)",
+			"variants": [
+				{
+					"name": "Check playbook syntax",
+					"shell_cmd": "ansible-playbook --syntax-check playbook.yml",
+				},
+			]
+		}
+	]
+}

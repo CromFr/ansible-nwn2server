@@ -1,0 +1,97 @@
+
+
+
+
+- name: Generate Git SSH key
+  become: true
+  become_user: "{{unprivileged_user}}"
+  command: ssh-keygen -P "" -C git@{{ansible_hostname}} -t ed25519 -f {{git_keyfile}}
+  args:
+    creates: "{{git_keyfile}}"
+
+- name: Configure server Git user
+  git_config:
+    scope: global
+    name: "{{item.name}}"
+    value: "{{item.value}}"
+  with_items:
+    - { name: "user.name",  value: "{{git_user_name}}"  }
+    - { name: "user.email", value: "{{git_user_email}}" }
+
+- name: Add Git remote server key to known_hosts
+  become: true
+  become_user: "{{item[0]}}"
+  known_hosts:
+    name: "{{((item[1].split(' '))[0].split(','))[0]}}"
+    key: "{{item[1]}}"
+  with_nested:
+    - [ "{{unprivileged_user}}", "root" ]
+    - [ "{{module_remote_serverkey}}", "{{clientsrc_remote_serverkey}}" ]
+
+- name: Clone Module
+  git:
+    repo: "{{module_remote}}"
+    version: master
+    dest: "{{module_path}}"
+    key_file: "{{git_keyfile}}"
+
+- name: Clone ClientSrc
+  git:
+    repo: "{{clientsrc_remote}}"
+    version: master
+    dest: "{{clientsrc_path}}"
+    key_file: "{{git_keyfile}}"
+
+
+- name: Install lcdaupdater required packages
+  become: true
+  become_user: "root"
+  apt:
+    name: rsync
+
+- name: Install lcdaupdater required tools
+  become: true
+  become_user: "root"
+  copy:
+    src: "{{item}}"
+    dest: /usr/local/bin/
+    mode: 755
+  with_items:
+  - "{{playbook_dir}}/staging/nwn-lib-d/nwn-erf"
+  - "{{playbook_dir}}/staging/LcdaTools/ModuleInstaller/moduleinstaller"
+  - "{{playbook_dir}}/staging/LcdaTools/StagingTool/stagingtool"
+
+- name: Install LcdaUpdater script
+  become: true
+  become_user: "root"
+  template:
+    src: lcdaupdater.j2
+    dest: /usr/local/bin/lcdaupdater
+    mode: 0755
+
+- name: Generate ADL SSH key
+  become: true
+  become_user: "{{unprivileged_user}}"
+  command: ssh-keygen -P "" -C adl@{{ansible_hostname}} -t ed25519 -f {{adl_remote_keyfile}}
+  args:
+    creates: "{{adl_remote_keyfile}}"
+
+- name: Add ADL remote server key to known_hosts
+  become: true
+  become_user: "{{item}}"
+  known_hosts:
+    name: "{{adl_remote}}"
+    key: "{{adl_remote_serverkey}}"
+  with_items:
+    - "{{unprivileged_user}}"
+    - root
+
+
+- name: Create adl directory
+  become: true
+  become_user: root
+  file:
+    path: "{{adl_path}}"
+    state: directory
+    owner: "{{unprivileged_user}}"
+    group: "{{unprivileged_user}}"

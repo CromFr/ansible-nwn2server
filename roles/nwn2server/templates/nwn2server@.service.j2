@@ -1,0 +1,17 @@
+[Unit]
+Description=NWN2 server on a windows virtual machine
+After=network.target
+
+[Service]
+ExecStart=/srv/%i/bin/launch.sh -pidfile /srv/%i/nwn2server.pid
+WorkingDirectory=/srv/%i
+
+Restart=on-failure
+RestartSec=10s
+PIDFile=/srv/%i/nwn2server.pid
+ExecStop=/bin/kill -INT $MAINPID
+TimeoutStopSec=30
+KillMode=none
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+
+
+- name: Install nwn-lib-d + LcdaTools
+  copy:
+    src: "{{item}}"
+    dest: /usr/local/bin/
+    mode: 755
+  with_items:
+  - "{{playbook_dir}}/staging/nwn-lib-d/nwn-gff"
+  - "{{playbook_dir}}/staging/nwn-lib-d/nwn-erf"

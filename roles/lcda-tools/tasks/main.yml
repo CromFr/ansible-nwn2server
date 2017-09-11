@@ -1,0 +1,19 @@
+
+
+
+- name: Discord notification script
+  template:
+    src: discord-send-message.j2
+    dest: /usr/local/bin/
+    mode: 755
+  when: discord_webhook != ""
+
+
+- import_tasks: lcdaupdater.yml
+  become: true
+  become_user: "{{unprivileged_user}}"
+  when:
+    - nwn2_path_home != ""
+    - module_path != ""
+    - clientsrc_path != ""
+    - adl_remote != ""

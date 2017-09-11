@@ -1,0 +1,72 @@
+[Game Options]
+Difficulty Level=3
+
+[Server Options]
+
+# Server setup
+Server Name=NWN2Server managed with ansible
+ModuleUrl=https://your-module-website.com
+Game Port={{server_port}}
+Max Players=42
+Game Type=9
+PVP Setting=2
+Game Region=0
+GameSpy Enabled=1
+Disable AutoSave=0
+Auto Save Interval=0
+CD Banned Behavior=0
+Validate Character Ownership=1
+BackupSavedChars=0
+Reload Module When Empty=0
+ServerDownTimer=180
+MPEnabled=1
+DMPassword=YourDMPassword
+PlayerPassword=YourPlayerPassword
+
+# Performance tuning / debugging
+2DA Cache Size=100
+2DA Engine Cache Size=100
+Scripts Print To Log=1
+Scripts Print To Screen=0
+EnableClientModuleCleanup=1
+EnableClientCampaignCleanup=1
+
+# Server behaviour
+Pause Loading During Cutscenes=0
+HideChallengeRatingInExamine=0
+HideEffectListInExamine=0
+ShowSearchSpam=0
+ShowDMJoinedMessage=0
+
+# Player settings
+AllowLocalChars=0
+Suppress Base Servervault=1
+Enforce Legal Characters=0
+ItemLevelRestrictions=1
+MinCharLevel=1
+MaxCharLevel=30
+Disable log in heal=1
+Restore Spell Uses On Login=0
+One Party Only=0
+Disallow Shouting=0
+PauseAndPlay=0
+
+# Auto DownLoader
+ClientSyncRequired=1
+DisableClientCustomUI=1
+DisableClientOverride=1
+ClientCachePassphrase=SomethingVeryRandom
+ClientCacheStrategy=2
+InfoURL=http://your-module-website.com/info/info.html
+NewsURL=http://your-module-website.com/info/news.html
+RulesURL=http://your-module-website.com/info/rules.html
+AdminEmail=YourEmail@doge.com
+
+
+
+[Banned Ips]
+0=
+[Banned Players]
+0=
+[Banned CD Keys]
+0=

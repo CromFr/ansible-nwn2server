@@ -1,0 +1,29 @@
+
+- name: Install NTFS package
+  apt:
+    name: ntfs-3g
+
+- name: Allocate Servervault NTFS file
+  command: fallocate -l {{servervault_ntfspart_size}} "{{servervault_ntfspart}}"
+  args:
+    creates: "{{servervault_ntfspart}}"
+  register: fallocate
+
+- name: Write filesystem
+  command: /sbin/mkntfs -F "{{servervault_ntfspart}}"
+  # filesystem:
+  #   dev: "{{servervault_ntfspart}}"
+  #   fstype: ntfs
+  #   #ntfs-progs refuse to create filesystem on files
+  #   opts: "-F"
+  when: fallocate.changed
+
+- name: Mount filesystem
+  mount:
+    path: "{{nwn2_path_home}}/servervault"
+    src: "{{servervault_ntfspart}}"
+    fstype: ntfs
+    opts: "rw,exec,uid={{unprivileged_uid}},gid={{unprivileged_uid}},dmask=022,fmask=133"
+    dump: 0
+    passno: 0
+    state: mounted

@@ -1,0 +1,24 @@
+
+
+- name: Install NFS package
+  apt:
+    name: nfs-server
+    state: latest
+
+# TODO: Breaks file rights as anybody (on localhost) can mount and
+#       read/writes files exported as the unprivileged user
+- name: Set exports
+  blockinfile:
+    path: /etc/exports
+    insertafter: EOF
+    block: |
+      "{{nwn2_path_root}}" 127.0.0.1(insecure,rw,all_squash,fsid=root,crossmnt,no_subtree_check,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}})
+
+- name: Update exports
+  command: exportfs -ra
+
+- name: Start & enable NFS service
+  systemd:
+    name: nfs-server.service
+    state: started
+    enabled: yes

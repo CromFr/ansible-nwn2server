@@ -1,0 +1,51 @@
+
+
+unprivileged_user: nwn2
+unprivileged_uid: 1000
+
+
+# Base path where data will be stored. Must be a direct sub-folder of /srv (see service files)
+nwn2_path_root: /srv/nwn2server
+
+# Path to the nwn2 home folder ("%HOMEPATH%\Documents\Neverwinter Nights 2" on Windows)
+nwn2_path_home: "{{nwn2_path_root}}/home"
+
+
+# NWN2Server port
+nwn2_server_port: 5121
+
+nwnx4_nwn2server_parameters: "-moduledir YourModule"
+nwnx4_mysql_loglevel: "1"
+
+# Remote desktop port
+qemu_spice_port: 3389
+
+# Port for controlling the vm using telnet (see qemu -monitor arg)
+qemu_monitor_port: 3390
+
+mysql_host: 10.0.2.2
+mysql_database: "nwnx"
+mysql_user: "nwnx"
+mysql_password: "password"
+
+# This partition will be mounted and will contain the servervault content.
+# NTFS is needed as files are ordered by name (rather than their hash values),
+#  and nwn2 doesn't sort characters when listing them in the character selection menu
+# This partition will be mounted in "{{nwn2_home}}/servervault"
+servervault_ntfspart: "{{nwn2_path_root}}/servervault.ntfs"
+servervault_ntfspart_size: 2G
+
+# Backup server IP / domain name
+backup_server: ""
+# Backup server key to add in known_hosts
+backup_server_key: "ssh-xxxxx xxxxxxxxxxxx"
+# Backup SSH user
+backup_user: backupuser
+# Backup storage path on the backup server
+backup_path: "~"
+# Identity key file to connect to backup server.
+# Will be generated if does not exist.
+# Must be accessible with nwn2 user
+backup_keyfile: /home/{{unprivileged_user}}/.ssh/backup_id_ed25519
+# Limit scp transfer rate, so server bandwidth don't get maxed out
+backup_speedlimit: 75000
