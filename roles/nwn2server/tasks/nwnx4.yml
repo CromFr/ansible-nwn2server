@@ -1,13 +1,8 @@
 
-- name: Download nwnx archive
-  get_url:
-    url: "http://nwnx.org/typo3conf/ext/nf_downloads/pi1/passdownload.php?downloaddata=13"
-    sha256sum: 8edf659b8a411e593ad6aae3650d8788df6d29c5d4cfed64fa49255c2e74e35c
-    dest: /tmp/nwnx4.zip
-
-- name: Unzip nwnx
+- name: Download & unzip nwnx archive
   unarchive:
-    src: /tmp/nwnx4.zip
+    remote_src: yes
+    src: 'http://nwnx.org/typo3conf/ext/nf_downloads/pi1/passdownload.php?downloaddata=13'
     dest: /tmp
     creates: /tmp/nwnx4
 
@@ -31,7 +26,7 @@
 - name: Install nwnx4 config files
   template:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4/{{item | basename}}"
+    dest: "{{nwn2_path_root}}/nwnx4/{{item | basename | splitext[0]}}"
     mode: 0644
   with_items:
     - nwnx.ini.j2
