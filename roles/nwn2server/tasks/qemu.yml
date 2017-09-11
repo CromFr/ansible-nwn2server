@@ -9,13 +9,12 @@
 
 - name: Check if qemu disk exists
   command: "ls {{nwn2_path_root}}/nwn2server-vmdisk.raw"
-  # stat:
-  #   path: "{{nwn2_path_root}}/nwn2server-vmdisk.raw"
-  register: stat_result
+  register: chk_diskimg
+  ignore_errors: yes
 
 - name: QEmu disk image creation
   command: qemu-img create -f raw "{{nwn2_path_root}}/nwn2server-vmdisk.raw" 15G
-  when: stat_result.rc != 0
+  when: chk_diskimg.failed == true
 
 # TODO: install windows when: stat_result.stat.exists == False
 
