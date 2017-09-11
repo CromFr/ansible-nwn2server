@@ -51,4 +51,4 @@
     name: Background
     type: string
     data: "86 63 127"
-  when: production == true
+  when: production == True
