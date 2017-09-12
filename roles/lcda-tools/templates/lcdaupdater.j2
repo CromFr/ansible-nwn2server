@@ -25,13 +25,6 @@ echo -e "\e[1;30;46m============================ Update LcdaClientSrc ==========
 cd $LCDACLIENTSRC
 git pull origin master
 
-echo "$PWD/tlk/ -> $NWN_HOME/"
-rm -rf $NWN_HOME/tlk/ || true
-cp -R tlk/         $NWN_HOME/
-echo "$PWD/lcda2da.hak/ -> $NWN_HOME/override/"
-rm -rf $NWN_HOME/override/lcda2da.hak/ || true
-cp -R lcda2da.hak/ $NWN_HOME/override/
-
 
 echo -e "\e[1;30;46m=============================== Generating haks ===============================\e[0m"
 if [[ ! -d out ]]; then
