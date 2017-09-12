@@ -67,11 +67,13 @@ LCDACLIENTSRC_MSG=`git log --reverse --format='%B%N' Online..HEAD | sed -nE 's/^
 git tag -f Online -m "`date`"
 git push -f origin Online
 
-MSG="**Mise à jour du serveur:**
+
+if [ "$LCDADEV_MSG" != "" ] || [ "$LCDACLIENTSRC_MSG" != "" ]; then
+
+	MSG="**Mise à jour du serveur:**
 $LCDADEV_MSG
 $LCDACLIENTSRC_MSG"
 
-if [ "$LCDADEV_MSG" != "" || "$LCDACLIENTSRC_MSG" != "" ]; then
 	{% if discord_webhook != "" %}
 	discord-send-message "$MSG"
 	{% endif %}
