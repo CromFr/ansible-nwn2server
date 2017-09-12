@@ -1,0 +1,6 @@
+
+
+
+- hosts: nwn2server-winguest
+  roles:
+    - windows-nwn2server

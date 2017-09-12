@@ -9,8 +9,3 @@
     - nwn2server
     - lcda-webservices
     - lcda-tools
-
-
-- hosts: nwn2server-winguest
-  roles:
-    - windows-nwn2server

@@ -21,6 +21,7 @@
   with_items:
     - /tmp/nwnx4/NWNX4_Controller.exe
     - /tmp/nwnx4/NWNX4_GUI.exe
+    - /tmp/nwnx4/NWNX4_Hook.dll
     - /tmp/nwnx4/xp_mysql.dll
     - /tmp/nwnx4/xp_time.dll
 

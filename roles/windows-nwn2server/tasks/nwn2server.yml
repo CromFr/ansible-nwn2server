@@ -7,26 +7,6 @@
     dest: 'C:\'
   register: install_nwn2server
 
-- name: Download nwnx4 archive for DLLs
-  win_get_url:
-    url: "http://nwnx.org/typo3conf/ext/nf_downloads/pi1/passdownload.php?downloaddata=13"
-    sha256sum: 8edf659b8a411e593ad6aae3650d8788df6d29c5d4cfed64fa49255c2e74e35c
-    dest: '%TMP%\nwnx4.zip'
-  when: install_nwn2server.changed
-
-- name: Extract nwnx4 archive
-  win_unzip:
-    src: '%TMP%\nwnx4.zip'
-    dest: '%TMP%'
-    creates: '%TMP%\nwnx4'
-  when: install_nwn2server.changed
-
-- name: Install NWNX4_Hook.dll to nwn2server
-  win_copy:
-    remote_src: true
-    src: '%TMP%\nwnx4\NWNX4_Hook.dll'
-    dest: 'C:\nwn2server\NWNX4_Hook.dll'
-
 
 - name: Allow nwn2server port on win firewall
   win_firewall_rule:
