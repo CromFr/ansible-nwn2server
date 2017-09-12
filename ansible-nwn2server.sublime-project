@@ -16,7 +16,7 @@
 			"variants": [
 				{
 					"name": "Check playbook syntax",
-					"shell_cmd": "ansible-playbook --syntax-check playbook.yml",
+					"shell_cmd": "ansible-playbook --syntax-check host.yml winguest.yml",
 				},
 			]
 		}
