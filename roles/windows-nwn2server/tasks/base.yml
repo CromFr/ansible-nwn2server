@@ -5,6 +5,14 @@
     state: installed
   when: windows_update == True
 
+- name: Clean Windows Update packages
+  win_command: Dism.exe /online /Cleanup-Image /StartComponentCleanup
+  when: windows_update == True
+
+- name: Clean Windows Update service packs
+  win_command: Dism.exe /online /Cleanup-Image /SPSuperseded
+  when: windows_update == True
+
 - name: Install windows features
   win_feature:
     name: "{{item}}"
@@ -25,13 +33,35 @@
     - vcredist2010
     - directx
 
+- win_stat:
+    path: 'C:\Program Files (x86)\SPICE Guest Tools'
+  register: chk_spiceinstall
+
+- name: Download redhat driver certificates
+  win_copy: src=win-driver-certs/{{item}} dest=C:\
+  with_items: &cert-list
+    - redhat1.cer
+    - redhat2.cer
+    - redhat3.cer
+  when: chk_spiceinstall.stat.exists == False
+
+- name: Trust redhat driver certificates
+  win_command: certutil -addstore "TrustedPublisher" C:\{{item}}
+  with_items: *cert-list
+  when: chk_spiceinstall.stat.exists == False
+
+- name: Remove installed certificates
+  win_file: path=C:\{{item}} state=absent
+  with_items: *cert-list
+  when: chk_spiceinstall.stat.exists == False
+
 
 - name: Spice guest tools
   win_package:
     path: "https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe"
     arguments: "/S"
-    creates_path: 'C:\Program Files (x86)\SPICE Guest Tools'
     creates_service: vdservice
+  when: chk_spiceinstall.stat.exists == False
 
 
 - name: Disable startup repair
@@ -51,4 +81,12 @@
     name: Background
     type: string
     data: "86 63 127"
+  when: production == True
+
+- name: Wallpaper color
+  win_regedit:
+    path: 'HKCU:\Control Panel\Desktop'
+    name: Wallpaper
+    type: string
+    data: ""
   when: production == True
