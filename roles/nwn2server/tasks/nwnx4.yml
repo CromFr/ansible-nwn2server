@@ -36,7 +36,7 @@
 
 - name: Install additional nwnx4 plugins (ini and dll files only)
   copy:
-    src: "{{item.src}}"
+    src: "{{item}}"
     dest: "{{nwn2_path_root}}/nwnx4"
     mode: "{{(item | splitext)[1] == '.dll' | ternary(755, 644)}}"
   with_fileglob:
