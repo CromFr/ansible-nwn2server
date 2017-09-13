@@ -39,6 +39,7 @@
 - name: Check if nwn2 has populated servervault
   command: "ls {{nwn2_path_home}}/servervault/"
   register: ls_servervault
+  changed_when: False
   when: backup_server != ""
 
 - name: Restore backups

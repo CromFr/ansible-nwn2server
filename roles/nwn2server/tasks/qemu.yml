@@ -10,6 +10,7 @@
 - name: Check if qemu disk exists
   command: "ls {{nwn2_path_root}}/nwn2server-vmdisk.raw"
   register: chk_diskimg
+  changed_when: False
   ignore_errors: yes
 
 - name: QEmu disk image creation
