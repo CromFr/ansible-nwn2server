@@ -13,9 +13,11 @@
     insertafter: EOF
     block: |
       "{{nwn2_path_root}}" 127.0.0.1(insecure,rw,all_squash,fsid=root,crossmnt,no_subtree_check,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}})
+  register: nfsexport
 
 - name: Update exports
   command: exportfs -ra
+  when: nfsexport.changed
 
 - name: Start & enable NFS service
   systemd:
