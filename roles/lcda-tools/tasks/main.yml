@@ -10,8 +10,6 @@
 
 
 - import_tasks: lcdaupdater.yml
-  become: true
-  become_user: "{{unprivileged_user}}"
   when:
     - nwn2_path_home != ""
     - module_path != ""

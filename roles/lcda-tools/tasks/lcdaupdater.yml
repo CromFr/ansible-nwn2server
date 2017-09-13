@@ -1,7 +1,5 @@
 
 
-
-
 - name: Generate Git SSH key
   become: true
   become_user: "{{unprivileged_user}}"
@@ -10,6 +8,8 @@
     creates: "{{git_keyfile}}"
 
 - name: Configure server Git user
+  become: true
+  become_user: "{{unprivileged_user}}"
   git_config:
     scope: global
     name: "{{item.name}}"
@@ -20,7 +20,7 @@
 
 - name: Add Git remote server key to known_hosts
   become: true
-  become_user: "{{item[0]}}"
+  become_user: "{{unprivileged_user}}"
   known_hosts:
     name: "{{((item[1].split(' '))[0].split(','))[0]}}"
     key: "{{item[1]}}"
@@ -29,29 +29,29 @@
     - [ "{{module_remote_serverkey}}", "{{clientsrc_remote_serverkey}}" ]
 
 - name: Clone Module
+  become: true
+  become_user: "{{unprivileged_user}}"
   git:
     repo: "{{module_remote}}"
-    version: master
+    version: Online
     dest: "{{module_path}}"
     key_file: "{{git_keyfile}}"
 
 - name: Clone ClientSrc
+  become: true
+  become_user: "{{unprivileged_user}}"
   git:
     repo: "{{clientsrc_remote}}"
-    version: master
+    version: Online
     dest: "{{clientsrc_path}}"
     key_file: "{{git_keyfile}}"
 
 
 - name: Install lcdaupdater required packages
-  become: true
-  become_user: "root"
   apt:
     name: rsync
 
 - name: Install lcdaupdater required tools
-  become: true
-  become_user: "root"
   copy:
     src: "{{item}}"
     dest: /usr/local/bin/
@@ -62,8 +62,6 @@
   - "{{playbook_dir}}/staging/LcdaTools/StagingTool/stagingtool"
 
 - name: Install LcdaUpdater script
-  become: true
-  become_user: "root"
   template:
     src: lcdaupdater.j2
     dest: /usr/local/bin/lcdaupdater
@@ -88,8 +86,6 @@
 
 
 - name: Create adl directory
-  become: true
-  become_user: root
   file:
     path: "{{adl_path}}"
     state: directory
