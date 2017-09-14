@@ -1,0 +1,17 @@
+
+
+- name: Install UFW
+  apt:
+    name: ufw
+  register: installed_ufw
+
+- name: "UFW: rate-limit SSH"
+  ufw:
+    rule: limit
+    name: OpenSSH
+  when: installed_ufw.changed
+
+- name: "UFW: enable"
+  ufw:
+    state: enabled
+  when: installed_ufw.changed

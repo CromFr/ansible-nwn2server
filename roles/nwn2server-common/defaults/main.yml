@@ -3,7 +3,6 @@
 unprivileged_user: nwn2
 unprivileged_uid: 1000
 
+use_ufw: True
 
-prompt_prefix: "NWN2 "
-
-swap_file_path: /swapfile
+install_nwnlibd_tools: True

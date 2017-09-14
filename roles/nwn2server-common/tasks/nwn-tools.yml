@@ -1,0 +1,10 @@
+
+
+- name: Install nwn-lib-d + LcdaTools
+  get_url:
+    url: "{{item.url}}"
+    dest: "/usr/local/bin/{{item.name}}"
+    mode: 755
+  with_items:
+  - {name: "nwn-gff", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-gff.linux-x86_64"}
+  - {name: "nwn-erf", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-erf.linux-x86_64"}

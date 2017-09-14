@@ -1,0 +1,38 @@
+
+- name: Packages install
+  apt:
+    name: "{{item}}"
+  with_items:
+    - git
+    - curl
+    - wget
+    - unzip
+
+
+
+# Unprivileged user
+- name: Unprivileged group setup
+  group:
+    name: "{{unprivileged_user}}"
+    gid: "{{unprivileged_uid}}"
+
+- name: Unprivileged user setup
+  user:
+    name: "{{unprivileged_user}}"
+    uid: "{{unprivileged_uid}}"
+    group: "{{unprivileged_user}}"
+- authorized_key:
+    user: "{{unprivileged_user}}"
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+
+
+# UFW
+- name: UFW Setup
+  include_tasks: ufw.yml
+  when: use_ufw
+
+# nwn-lib-d
+- name: NWN2 tools
+  include_tasks: nwn-tools.yml
+  when: install_nwnlibd_tools

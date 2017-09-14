@@ -5,7 +5,4 @@
 - hosts: nwn2server-host
   remote_user: root
   roles:
-    - common
     - nwn2server
-    - lcda-webservices
-    - lcda-tools
