@@ -36,18 +36,3 @@ mysql_password: "password"
 # This partition will be mounted in "{{nwn2_home}}/servervault"
 servervault_ntfspart: "{{nwn2_path_root}}/servervault.ntfs"
 servervault_ntfspart_size: 2G
-
-# Backup server IP / domain name
-backup_server: ""
-# Backup server key to add in known_hosts
-backup_server_key: "ssh-xxxxx xxxxxxxxxxxx"
-# Backup SSH user
-backup_user: backupuser
-# Backup storage path on the backup server
-backup_path: "~"
-# Identity key file to connect to backup server.
-# Will be generated if does not exist.
-# Must be accessible with nwn2 user
-backup_keyfile: /home/{{unprivileged_user}}/.ssh/backup_id_ed25519
-# Limit scp transfer rate, so server bandwidth don't get maxed out
-backup_speedlimit: 75000

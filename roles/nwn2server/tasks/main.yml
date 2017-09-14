@@ -32,16 +32,3 @@
 # NWNX4
 - import_tasks: nwnx4.yml
 
-# Backup tools
-- import_tasks: backup.yml
-  when: backup_server != ""
-
-- name: Check if nwn2 has populated servervault
-  command: "ls {{nwn2_path_home}}/servervault/"
-  register: ls_servervault
-  changed_when: False
-  when: backup_server != ""
-
-- name: Restore backups
-  command: "{{nwn2_path_root}}/bin/backup-restore"
-  when: ls_servervault.stdout == "" and backup_server != ""
