@@ -20,7 +20,7 @@
 
 - name: Mount filesystem
   mount:
-    path: "{{nwn2_path_home}}/servervault"
+    path: "{{nwn2_path_root}}/home/servervault"
     src: "{{servervault_ntfspart}}"
     fstype: ntfs
     opts: "rw,exec,uid={{unprivileged_uid}},gid={{unprivileged_uid}},dmask=022,fmask=133"

@@ -3,5 +3,5 @@
 - name: Write nwn2player.ini
   template:
     src: nwn2player.ini.j2
-    dest: "{{nwn2_path_home}}/nwn2player.ini"
+    dest: "{{nwn2_path_root}}/home/nwn2player.ini"
     mode: 0644

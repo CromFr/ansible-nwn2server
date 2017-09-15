@@ -7,6 +7,5 @@ unprivileged_uid: 1000
 
 # Host nwn2server path for NFS mounting
 nwn2_path_root: /srv/nwn2server
-nwn2_path_home: "{{nwn2_path_root}}/home"
 
 nwn2_server_port: 5121
