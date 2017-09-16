@@ -40,6 +40,6 @@
     dest: "{{nwn2_path_root}}/nwnx4"
     mode: "{{(item | splitext)[1] == '.dll' | ternary(755, 644)}}"
   with_fileglob:
-    - "{{playbook_dir}}/staging/nwnx4_plugins/*.ini"
-    - "{{playbook_dir}}/staging/nwnx4_plugins/*.dll"
+    - "{{nwnx4_additional_plugin_path}}/*.ini"
+    - "{{nwnx4_additional_plugin_path}}/*.dll"
 

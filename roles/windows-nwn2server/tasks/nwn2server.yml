@@ -12,7 +12,7 @@
     src: "{{item}}"
     dest: 'C:\nwn2server\{{item | basename}}'
   with_fileglob:
-    - "{{playbook_dir}}/staging/nwn2server-dll/*.dll"
+    - "{{nwn2_additional_dll_path}}/*.dll"
 
 
 - name: Allow nwn2server port on win firewall

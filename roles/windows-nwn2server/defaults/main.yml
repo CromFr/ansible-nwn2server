@@ -8,4 +8,7 @@ unprivileged_uid: 1000
 # Host nwn2server path for NFS mounting
 nwn2_path_root: /srv/nwn2server
 
+# Change this path to set a custom dir to provision nwn2server additional DLL files (that can be versionned)
+nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
+
 nwn2_server_port: 5121

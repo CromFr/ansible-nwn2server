@@ -14,6 +14,8 @@ nwn2_server_port: 5121
 
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
 nwnx4_mysql_loglevel: "1"
+# Change this path to set a custom dir to provision nwnx4 additional plugins & configuration (that can be versionned)
+nwnx4_additional_plugin_path: "{{playbook_dir}}/staging/nwnx4_plugins"
 
 # HTTP/HTTPS/FTP url to download the compressed windows disk image.
 # If it is a local file path, it will send from your system (can be very slow)
