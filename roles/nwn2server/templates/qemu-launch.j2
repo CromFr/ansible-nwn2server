@@ -10,7 +10,7 @@ qemu-system-x86_64 \
 	-smp cores=1,threads=1,sockets=1 \
 	-m 2.5G \
 	\
-	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.raw",format=raw,if=virtio \
+	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}",format={{qemu_disk_format}},if=virtio \
 	\
 	-device virtio-net-pci,netdev=net0 \
 	-netdev user,id=net0,hostname=nwn2server,hostfwd=udp:0.0.0.0:{{nwn2_server_port}}-:{{nwn2_server_port}},hostfwd=tcp:127.0.0.1:5985-:5985 \

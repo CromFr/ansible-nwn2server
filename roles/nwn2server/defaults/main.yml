@@ -15,6 +15,13 @@ nwn2_server_port: 5121
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
 nwnx4_mysql_loglevel: "1"
 
+# HTTP/HTTPS/FTP url to download the compressed windows disk image.
+# If it is a local file path, it will send from your system (can be very slow)
+# Any compression can be used
+qemu_disk_download_url: "https://user:password@yoursite.com/path/to/disk.raw.xz"
+# Qemu disk image format (raw, qcow2, ...)
+qemu_disk_format: "raw"
+
 # Remote desktop port
 qemu_spice_port: 3389
 

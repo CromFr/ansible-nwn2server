@@ -7,17 +7,14 @@
     - qemu
     - qemu-kvm
 
-- name: Check if qemu disk exists
-  command: "ls {{nwn2_path_root}}/nwn2server-vmdisk.raw"
-  register: chk_diskimg
-  changed_when: False
-  ignore_errors: yes
 
-- name: QEmu disk image creation
-  command: qemu-img create -f raw "{{nwn2_path_root}}/nwn2server-vmdisk.raw" 15G
-  when: chk_diskimg.failed == true
+- name: Download/extract qemu disk
+  unarchive:
+    remote_src: "{{qemu_disk_download_url | urlsplit('scheme') != ''}}"
+    src: "{{qemu_disk_download_url}}"
+    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+    creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
 
-# TODO: install windows when: stat_result.stat.exists == False
 
 - name: Copy nwn2server launch script
   template:
