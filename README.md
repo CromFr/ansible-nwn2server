@@ -117,10 +117,10 @@ chmod +x qemu-launch.sh
 Basically you need to write an inventory file:
 
 ```ini
-[nwn2server-host]
+[nwn2server_host]
 your-server-address.com
 
-[nwn2server-host:vars]
+[nwn2server_host:vars]
 # Add any variables from roles/*/defaults you want to override
 nwnx4_nwn2server_parameters="-moduledir MagicalWorld"
 qemu_disk_download_url="./nwn2server-vmdisk.raw.xz"
@@ -128,11 +128,11 @@ qemu_disk_format=raw
 mysql_password="SecretMySQLPassword"
 servervault_ntfspart_size=3G
 
-[nwn2server-winguest]
+[nwn2server_winguest]
 # SSH tunnel entry point, 127.0.0.1 unless you are doing strange things :)
 127.0.0.1
 
-[nwn2server-winguest:vars]
+[nwn2server_winguest:vars]
 ansible_user=Administrator
 ansible_password="YourWindowsPassword"
 ansible_port=5985

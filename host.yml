@@ -2,7 +2,7 @@
 
 
 
-- hosts: nwn2server-host
+- hosts: nwn2server_host
   remote_user: root
   roles:
     - nwn2server
