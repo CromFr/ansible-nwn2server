@@ -4,6 +4,14 @@
   win_updates:
     state: installed
   when: windows_update == True
+  register: winupdate
+
+- name: Reboot windows to finish updates
+  win_reboot:
+    reboot_timeout: 900
+  when:
+    - windows_update == True
+    - winupdate.changed
 
 - name: Clean Windows Update packages
   win_command: Dism.exe /online /Cleanup-Image /StartComponentCleanup
