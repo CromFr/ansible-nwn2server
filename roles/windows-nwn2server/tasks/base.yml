@@ -46,7 +46,7 @@
   register: chk_spiceinstall
 
 - name: Download redhat driver certificates
-  win_copy: src=win-driver-certs/{{item}} dest=C:\
+  win_copy: src="win-drivers-certs/{{item}}" dest=C:\
   with_items: &cert-list
     - redhat1.cer
     - redhat2.cer
@@ -91,7 +91,7 @@
     data: "86 63 127"
   when: production == True
 
-- name: Wallpaper color
+- name: Wallpaper solid color
   win_regedit:
     path: 'HKCU:\Control Panel\Desktop'
     name: Wallpaper
