@@ -10,9 +10,8 @@ Restart=on-failure
 RestartSec=10s
 
 PIDFile=/srv/%i/nwn2server.pid
-ExecStop=/bin/kill -INT $MAINPID
-TimeoutStopSec=30
-KillMode=none
+ExecStop=/bin/sh -c "echo 'system_powerdown' | nc 127.0.0.1 3390"
+TimeoutStopSec=60
 
 Nice=-1
 
