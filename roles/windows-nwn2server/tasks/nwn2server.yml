@@ -33,8 +33,9 @@
     state: directory
   with_items:
     - 'C:\nwn2logs'
+    - 'C:\nwn2logs\NWN2'
 
 - name: Create nwn2 logs symlink
-  win_command: cmd /c mklink /d C:\nwn2logs\LOGS.0 Z:\logs
+  win_command: cmd /c mklink /d C:\nwn2logs\NWN2\LOGS.0 Z:\logs
   args:
-    creates: 'C:\nwn2logs\LOGS.0'
+    creates: 'C:\nwn2logs\NWN2\LOGS.0'
