@@ -9,8 +9,11 @@ use_ufw: True
 # Base path where data will be stored. Must be a direct sub-folder of /srv (see service files)
 nwn2_path_root: /srv/nwn2server
 
-# NWN2Server port
-nwn2_server_port: 5121
+
+nwn2server_name: "NWN2 server managed with Ansible"
+nwn2server_playerpassword: ""
+nwn2server_dmpassword: ""
+nwn2server_port: 5121
 
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
 nwnx4_mysql_loglevel: "1"

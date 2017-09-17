@@ -18,7 +18,7 @@
 - name: Allow nwn2server port on win firewall
   win_firewall_rule:
     name: NWN2Server
-    localport: "{{nwn2_server_port}}"
+    localport: "{{nwn2server_port}}"
     action: allow
     direction: in
     protocol: udp

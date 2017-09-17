@@ -4,9 +4,9 @@ Difficulty Level=3
 [Server Options]
 
 # Server setup
-Server Name=NWN2Server managed with ansible
+Server Name={{nwn2server_name}}
 ModuleUrl=https://your-module-website.com
-Game Port={{server_port}}
+Game Port={{nwn2server_port}}
 Max Players=42
 Game Type=9
 PVP Setting=2
@@ -20,8 +20,8 @@ BackupSavedChars=0
 Reload Module When Empty=0
 ServerDownTimer=180
 MPEnabled=1
-DMPassword=YourDMPassword
-PlayerPassword=YourPlayerPassword
+PlayerPassword={{nwn2server_playerpassword}}
+DMPassword={{nwn2server_dmpassword}}
 
 # Performance tuning / debugging
 2DA Cache Size=100
