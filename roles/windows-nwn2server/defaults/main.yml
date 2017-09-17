@@ -11,4 +11,4 @@ nwn2_path_root: /srv/nwn2server
 # Change this path to set a custom dir to provision nwn2server additional DLL files (that can be versionned)
 nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
 
-nwn2_server_port: 5121
+nwn2server_port: 5121

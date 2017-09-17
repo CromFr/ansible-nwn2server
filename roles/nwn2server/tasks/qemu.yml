@@ -56,5 +56,5 @@
 - name: "UFW: Enable NWN2Server port"
   ufw:
     rule: allow
-    port: "{{nwn2_server_port}}"
+    port: "{{nwn2server_port}}"
     proto: udp

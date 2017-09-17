@@ -84,7 +84,7 @@ cp roles/nwn2server/templates/qemu-launch.j2 qemu-launch.sh
 sed -i "s/{{unprivileged_user}}/`whoami`/g" qemu-launch.sh
 sed -i "s/{{nwn2_path_root}}/./g" qemu-launch.sh
 sed -i "s/{{qemu_disk_format}}/raw/g" qemu-launch.sh
-sed -i "s/{{nwn2_server_port}}/5121/g" qemu-launch.sh
+sed -i "s/{{nwn2server_port}}/5121/g" qemu-launch.sh
 sed -i "s/{{qemu_spice_port}}/3389/g" qemu-launch.sh
 sed -Ei 's/-monitor\s+.+$/-monitor stdio \\/g' qemu-launch.sh
 chmod +x qemu-launch.sh
