@@ -7,12 +7,31 @@
     - qemu
     - qemu-kvm
 
+- name: Check if qemu disk is present
+  command: ls "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+  ignore_errors: yes
+  register: chk_qemudisk
 
-- name: Download/extract qemu disk
-  unarchive:
-    remote_src: "{{qemu_disk_download_url | urlsplit('scheme') != ''}}"
+- name: Upload Qemu compressed disk
+  copy:
     src: "{{qemu_disk_download_url}}"
-    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | splitext)[1]}}"
+  when:
+    - chk_qemudisk | failed
+    - qemu_disk_download_url | urlsplit('scheme') == ''
+
+- name: Download Qemu compressed disk from URL
+  get_url:
+    remote_src: "{{qemu_disk_download_url | urlsplit('scheme') != ''}}"
+    url: "{{qemu_disk_download_url}}"
+    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
+  when:
+    - chk_qemudisk | failed
+    - qemu_disk_download_url | urlsplit('scheme') != ''
+
+- name: Extract Qemu disk
+  command: xz -d {{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}
+  args:
     creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
 
 
@@ -28,10 +47,10 @@
     dest: /etc/systemd/system/nwn2server@.service
     mode: 0644
 
-- name: Enable nwn2server
+- name: Enable & start nwn2server
   systemd:
     name: "nwn2server@{{nwn2_path_root | basename}}.service"
-    # state: started
+    state: started
     enabled: yes
 
 - name: "UFW: Enable NWN2Server port"
