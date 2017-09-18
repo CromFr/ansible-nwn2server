@@ -1,6 +1,25 @@
 
 
+- name: Create NWN2 folders
+  become: true
+  become_user: "{{unprivileged_user}}"
+  file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+    - "{{nwn2_path_root}}/home/campaigns"
+    - "{{nwn2_path_root}}/home/database"
+    - "{{nwn2_path_root}}/home/hak"
+    - "{{nwn2_path_root}}/home/modules"
+    - "{{nwn2_path_root}}/home/override"
+    - "{{nwn2_path_root}}/home/pwc"
+    - "{{nwn2_path_root}}/home/saves"
+    - "{{nwn2_path_root}}/home/servervault"
+    - "{{nwn2_path_root}}/home/tlk"
+
 - name: Write nwn2player.ini
+  become: true
+  become_user: "{{unprivileged_user}}"
   template:
     src: nwn2player.ini.j2
     dest: "{{nwn2_path_root}}/home/nwn2player.ini"
