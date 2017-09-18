@@ -40,6 +40,7 @@
     - vcredist2005
     - vcredist2010
     - directx
+    - pscx
 
 - win_stat:
     path: 'C:\Program Files (x86)\SPICE Guest Tools'

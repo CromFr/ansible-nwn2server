@@ -26,6 +26,7 @@
   register: chk
   failed_when: chk.stdout_lines[0] != "True"
   ignore_errors: yes
+  changed_when: False
 
 - name: Mount network drive
   win_shell: 'psexec -i -s net use Z: \\10.0.2.2{{nwn2_path_root}} /persistent:yes'
