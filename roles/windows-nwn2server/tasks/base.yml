@@ -29,7 +29,12 @@
     - RSAT-NFS-Admin
     - NET-Framework-Core
     - Desktop-Experience
+  register: windows_features
 
+- name: Reboot windows to finish installing features
+  win_reboot:
+    reboot_timeout: 900
+  when: windows_features.changed
 
 - name: Install chocolatey packages
   win_chocolatey:
