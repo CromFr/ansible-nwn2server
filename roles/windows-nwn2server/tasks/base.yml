@@ -8,7 +8,7 @@
 
 - name: Reboot windows to finish updates
   win_reboot:
-    reboot_timeout: 900
+  ignore_errors: yes
   when:
     - windows_update == True
     - winupdate.changed
@@ -33,7 +33,7 @@
 
 - name: Reboot windows to finish installing features
   win_reboot:
-    reboot_timeout: 900
+  ignore_errors: yes
   when: windows_features.changed
 
 - name: Install chocolatey packages
@@ -46,6 +46,12 @@
     - vcredist2010
     - directx
     - pscx
+  register: windows_packages
+
+- name: Reboot windows to finish installing packages
+  win_reboot:
+  ignore_errors: yes
+  when: windows_packages.changed
 
 - win_stat:
     path: 'C:\Program Files (x86)\SPICE Guest Tools'
