@@ -56,6 +56,7 @@
 - win_stat:
     path: 'C:\Program Files (x86)\SPICE Guest Tools'
   register: chk_spiceinstall
+  ignore_errors: yes #This reinstalls KVM net drivers and cause read timeouts
 
 - name: Download redhat driver certificates
   win_copy: src="win-drivers-certs/{{item}}" dest=C:\
