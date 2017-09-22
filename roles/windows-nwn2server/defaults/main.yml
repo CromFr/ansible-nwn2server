@@ -2,7 +2,6 @@ production: False
 windows_update: False
 
 # Host unprivileged user info
-unprivileged_user: nwn2
 unprivileged_uid: 1000
 
 # Host nwn2server path for NFS mounting

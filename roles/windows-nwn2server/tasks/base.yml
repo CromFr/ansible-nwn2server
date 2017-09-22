@@ -42,10 +42,12 @@
   with_items:
     - autologon
     - psexec
+    - pscx
     - vcredist2005
     - vcredist2010
+    - dotnet4.0 #Needed for AuroraServerNWScript
+    - dotnet4.5 #Needed for CLR scripts
     - directx
-    - pscx
   register: windows_packages
 
 - name: Reboot windows to finish installing packages
