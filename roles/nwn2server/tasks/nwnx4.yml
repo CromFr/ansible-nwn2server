@@ -43,3 +43,11 @@
     - "{{nwnx4_additional_plugin_path}}/*.ini"
     - "{{nwnx4_additional_plugin_path}}/*.dll"
 
+- name: Install additional nwnx4 config templates
+  template:
+    src: "{{item}}"
+    dest: "{{nwn2_path_root}}/nwnx4/{{(item | basename | splitext)[0]}}"
+    mode: 0644
+  with_fileglob:
+    - "{{nwnx4_additional_plugin_path}}/*.j2"
+
