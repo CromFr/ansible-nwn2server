@@ -44,3 +44,9 @@ mysql_password: "password"
 # This partition will be mounted in "{{nwn2_home}}/servervault"
 servervault_ntfspart: "{{nwn2_path_root}}/servervault.ntfs"
 servervault_ntfspart_size: 2G
+
+
+# Virtual machine windows access configuration
+windows_user: Administrator
+windows_password: "YourWindowsPassword"
+winrm_port: 5985

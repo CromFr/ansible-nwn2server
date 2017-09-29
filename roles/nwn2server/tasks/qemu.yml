@@ -6,6 +6,8 @@
   with_items:
     - qemu
     - qemu-kvm
+    - python
+    - python-winrm
 
 - name: Check if qemu disk is present
   command: ls "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
@@ -40,6 +42,12 @@
   template:
     src: qemu-launch.j2
     dest: "{{nwn2_path_root}}/bin/launch"
+    mode: 0755
+
+- name: Copy controller script
+  template:
+    src: nwn2server-controller.j2
+    dest: "{{nwn2_path_root}}/bin/nwn2server-controller"
     mode: 0755
 
 - name: Copy nwn2server service file
