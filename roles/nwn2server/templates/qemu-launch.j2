@@ -7,7 +7,7 @@ qemu-system-x86_64 \
 	\
 	-enable-kvm \
 	-cpu host \
-	-smp cores=1,threads=1,sockets=1 \
+	-smp {{qemu_smp}} \
 	-m 2.5G \
 	\
 	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}",format={{qemu_disk_format}},if=virtio \
