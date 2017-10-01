@@ -10,13 +10,6 @@
     - AnonymousUid
     - AnonymousGid
 
-# - name: Disable NFS DeleteSymLinks
-#   win_regedit:
-#     path: 'HKLM:\SOFTWARE\Microsoft\ClientForNFS\CurrentVersion\Default'
-#     name: DeleteSymLinks
-#     type: dword
-#     data: 0
-
 # This allows symlinks inside the NFS mount to be followed
 - name: Allow Remote to Remote symlinks
   win_shell: fsutil behavior set SymlinkEvaluation R2R:1
@@ -29,5 +22,5 @@
   changed_when: False
 
 - name: Mount network drive
-  win_shell: 'psexec -i -s net use Z: "\\10.0.2.2{{nwn2_path_root}}" /persistent:yes'
+  win_shell: 'psexec -i 1 -s net use Z: "\\10.0.2.2{{nwn2_path_root}}" /persistent:yes'
   when: chk.failed == True

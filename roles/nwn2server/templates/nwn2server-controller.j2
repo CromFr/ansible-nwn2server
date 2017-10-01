@@ -1,27 +1,14 @@
 #!/bin/bash
 
-if [ "$1" == "start" ]; then
-	CMD="C:/Users/Administrator/Desktop/nwn2server-start.bat"
-elif [ "$1" == "stop" ]; then
-	CMD="psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe && psexec -nobanner -i 1 -s taskkill /IM NWNX4_GUI.exe"
-elif [ "$1" == "kill" ]; then
-	CMD="taskkill /IM nwn2server.exe /F"
-elif [ "$1" == "restart" ]; then
-	CMD="psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe"
-elif [ "$1" == "cmd" ]; then
-	CMD="$2"
-else
-	echo "Usage: $0 (start|stop|kill|restart|cmd)"
-	echo "  cmd example: $0 cmd tasklist"
-	exit 1
-fi
 
+function winrm(){
+	CMD=$(echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\\\\\"/g')
 
-python2 -c "
+	python2 -c "
 import winrm
 import sys
 session = winrm.Session('127.0.0.1:{{winrm_port}}', auth=('{{windows_user}}','{{windows_password}}'))
-print(\"exec: $CMD\")
+print(\"exec: \\\"$CMD\\\"\")
 try:
 	result = session.run_cmd(\"$CMD\")
 	print('\x1b[31m' + result.std_err.decode('utf-8') + '\x1b[0m')
@@ -31,3 +18,35 @@ except:
 	sys.exit(-1)
 sys.exit(result.status_code)
 "
+}
+
+
+if [ "$1" == "start" ]; then
+    IS_RUNNING=$(winrm "tasklist" | grep nwn2server.exe | wc -l)
+    if [[ $IS_RUNNING > 0 ]]; then
+        echo "NWN2Server is already running"
+        exit
+    fi
+    winrm "psexec -nobanner -d -i 1 -s C:/Users/Administrator/Desktop/nwn2server-start.bat" || true
+elif [ "$1" == "stop" ]; then
+    winrm "psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe"
+elif [ "$1" == "kill" ]; then
+    winrm "taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe /F"
+elif [ "$1" == "restart" ]; then
+    IS_NWNX4_RUNNING=$(winrm "tasklist" | grep nwnx4_gui.exe | wc -l)
+    if [[ $IS_NWNX4_RUNNING > 0 ]]; then
+        winrm "psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe"
+    else
+        exec $0 start
+    fi
+elif [ "$1" == "cmd" ]; then
+    winrm "$2"
+else
+    echo "Usage: $0 (start|stop|kill|restart|cmd)"
+    echo "  start   Launch the startup batch file. Do nothing if already running."
+    echo "  stop    Exit both NWNX4 and NWN2Server (Normal shutdown)"
+    echo "  kill    Force kill both NWNX4 and NWN2Server (similar to kill -9)"
+    echo "  restart Exit only NWN2Server (Normal shutdown). The NWNX4 process watchdog will restart NWN2server."
+    echo "  cmd     Launch a windows command. Example: $0 cmd tasklist"
+    exit 1
+fi
