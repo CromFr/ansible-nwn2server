@@ -8,3 +8,6 @@
   with_items:
   - {name: "nwn-gff", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-gff.linux-x86_64"}
   - {name: "nwn-erf", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-erf.linux-x86_64"}
+  - {name: "nwn-tlk", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-tlk.linux-x86_64"}
+  - {name: "nwn-bdb", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-bdb.linux-x86_64"}
+  - {name: "nwn-trn", url: "https://cromfr.github.io/nwn-lib-d/binaries/nwn-trn.linux-x86_64"}

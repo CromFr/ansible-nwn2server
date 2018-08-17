@@ -4,7 +4,7 @@
 function winrm(){
 	CMD=$(echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\\\\\"/g')
 
-	python2 -c "
+	python3 -c "
 import winrm
 import sys
 session = winrm.Session('127.0.0.1:{{winrm_port}}', auth=('{{windows_user}}','{{windows_password}}'))

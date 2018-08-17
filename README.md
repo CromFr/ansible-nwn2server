@@ -49,7 +49,7 @@ To populate the directory `staging/nwn2server` with the necessary game files to 
 
 ## Host setup
 
-- Tested on Ubuntu server 17.04 64 bit
+- For Ubuntu server 18.04 64 bit
 - Required packages:
     + `python`
 - Add your SSH key to the root user
