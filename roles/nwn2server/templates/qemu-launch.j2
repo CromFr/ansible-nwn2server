@@ -25,5 +25,5 @@ qemu-system-x86_64 \
 	-chardev spicevmc,id=vdagent,name=vdagent \
 	-device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
 	\
-	-monitor telnet:127.0.0.1:{{qemu_monitor_port}},server,nowait \
+	-monitor unix:{{nwn2_path_root}}/qemu-monitor.sock,server,nowait
 	$@
