@@ -12,10 +12,38 @@
     - "{{nwn2_path_root}}/home/hak"
     - "{{nwn2_path_root}}/home/modules"
     - "{{nwn2_path_root}}/home/override"
+    - "{{nwn2_path_root}}/home/override.disk"
     - "{{nwn2_path_root}}/home/pwc"
     - "{{nwn2_path_root}}/home/saves"
     - "{{nwn2_path_root}}/home/servervault"
     - "{{nwn2_path_root}}/home/tlk"
+
+- name: Setup tmpfs for override folder
+  mount:
+    path: "{{nwn2_path_root}}/home/override"
+    src: tmpfs
+    fstype: tmpfs
+    opts: nodev,nosuid,size={{nwn2server_override_size}}
+    dump: 0
+    passno: 0
+    state: mounted
+  register: override_tmpfs_setup
+
+- name: Copy tmpfs restore service file
+  template:
+    src: nwn2server-tmpfs-restore@.service.j2
+    dest: /etc/systemd/system/nwn2server-tmpfs-restore@.service
+    mode: 0644
+
+- name: Enable tmpfs restore service
+  systemd:
+    name: nwn2server-tmpfs-restore@{{nwn2_path_root | basename}}.service
+    state: started
+    enabled: yes
+  when: override_tmpfs_setup.changed
+
+
+
 
 - name: Write nwn2player.ini
   become: true

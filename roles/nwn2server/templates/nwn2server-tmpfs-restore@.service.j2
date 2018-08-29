@@ -1,0 +1,9 @@
+[Unit]
+Description=NWN2 server tmpfs file copy for override folder
+After=network.target
+
+[Service]
+ExecStart=/bin/sh -c "cp -R --preserve=all /srv/%i/home/override.disk/* /srv/%i/home/override/"
+
+[Install]
+WantedBy=multi-user.target

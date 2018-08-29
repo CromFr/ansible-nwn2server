@@ -15,6 +15,9 @@ nwn2server_playerpassword: ""
 nwn2server_dmpassword: ""
 nwn2server_port: 5121
 
+# Override folder will be loaded into RAM. This is the maximum size of the override folder
+nwn2server_override_size: 2G
+
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
 nwnx4_mysql_loglevel: "1"
 # Change this path to set a custom dir to provision nwnx4 additional plugins & configuration (that can be versionned)
@@ -33,9 +36,6 @@ qemu_smp: "cores=1,threads=1,sockets=1"
 
 # Remote desktop port
 qemu_spice_port: 3389
-
-# Port for controlling the vm using telnet (see qemu -monitor arg)
-qemu_monitor_port: 3390
 
 mysql_host: 10.0.2.2
 mysql_database: "nwnx"

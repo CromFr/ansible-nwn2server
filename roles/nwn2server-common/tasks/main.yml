@@ -7,6 +7,7 @@
     - curl
     - wget
     - unzip
+  tags: [base]
 
 
 
@@ -15,15 +16,19 @@
   group:
     name: "{{unprivileged_user}}"
     gid: "{{unprivileged_uid}}"
+  tags: [base]
 
 - name: Unprivileged user setup
   user:
     name: "{{unprivileged_user}}"
     uid: "{{unprivileged_uid}}"
     group: "{{unprivileged_user}}"
+  tags: [base]
+
 - authorized_key:
     user: "{{unprivileged_user}}"
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  tags: [base]
 
 
 
@@ -31,6 +36,7 @@
 - name: UFW Setup
   include_tasks: ufw.yml
   when: use_ufw
+  tags: [base]
 
 # nwn-lib-d
 - name: NWN2 tools

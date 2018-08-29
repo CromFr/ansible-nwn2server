@@ -23,12 +23,11 @@
 # MySQL server
 - import_tasks: sql.yml
 
-# Virtualization
-- import_tasks: qemu.yml
-
 # NWN2 Home (Documents/Neverwinter Nights 2)
 - import_tasks: nwn2home.yml
 
 # NWNX4
 - import_tasks: nwnx4.yml
 
+# Virtualization
+- import_tasks: qemu.yml
