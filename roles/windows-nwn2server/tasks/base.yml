@@ -30,6 +30,18 @@
     - NET-Framework-Core
     - Desktop-Experience
   register: windows_features
+  when: windows_version == "win2012r2"
+
+- name: Install windows features
+  win_feature:
+    name: "{{item}}"
+  with_items:
+    - FS-NFS-Services
+    - RSAT-NFS-Admin
+    - NET-Framework-Core
+    - Desktop-Experience
+  register: windows_features
+  when: windows_version == "win2008r2"
 
 - name: Reboot windows to finish installing features
   win_reboot:
@@ -41,8 +53,7 @@
     name: "{{item}}"
   with_items:
     - autologon
-    - psexec
-    - pscx
+    - sysinternals
     - vcredist2005
     - vcredist2010
     - dotnet4.0 #Needed for AuroraServerNWScript
@@ -95,7 +106,7 @@
 
 
 - name: Setup Autologon
-  win_command: autologon Administrator WORKGROUP {{ansible_password}}
+  win_command: autologon {{ansible_user}} WORKGROUP {{ansible_password}}
 
 
 - name: Wallpaper color

@@ -56,7 +56,7 @@ To populate the directory `staging/nwn2server` with the necessary game files to 
 
 ## Guest windows setup
 
-- Tested on Windows Server 2012 R2 64 bit
+- Tested on Windows Server 2012 R2 64 bit and Windows Server 2008 R2 64 bit
 - Remote control is done using WinRM over a ssh tunnel
 - Disk image must be compressed using the xz format
 - To execute the ansible scripts for windows, you need to setup a SSH tunnel as WinRM port is only open for localhosts: `ssh -NL 5985:127.0.0.1:5985 root@yourserver.com`
@@ -137,6 +137,7 @@ ansible_user=Administrator
 ansible_password="YourWindowsPassword"
 ansible_port=5985
 ansible_connection=winrm
+windows_version=win2012r2
 
 # Add any variables from roles/windows-nwn2server/defaults you want to override
 production=False
