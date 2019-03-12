@@ -13,7 +13,7 @@ shopt -s nocaseglob
 NWN2="$1"
 DEST="$PWD/staging/nwn2server"
 
-mkdir "$DEST"
+mkdir -p "$DEST"
 cd "$NWN2"
 cp --parents -v \
 	Campaigns/Neverwinter\ Nights\ 2\ Campaign*/Campaign.cam \
