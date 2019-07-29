@@ -79,21 +79,39 @@ wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-vir
 
 - Start the Qemu virtual machine on your host
 ```sh
-# Create launch script
-cp roles/nwn2server/templates/qemu-launch.j2 qemu-launch.sh
-sed -i "s/{{unprivileged_user}}/`whoami`/g" qemu-launch.sh
-sed -i "s/{{nwn2_path_root}}/./g" qemu-launch.sh
-sed -i "s/{{qemu_disk_format}}/raw/g" qemu-launch.sh
-sed -i "s/{{nwn2server_port}}/5121/g" qemu-launch.sh
-sed -i "s/{{qemu_spice_port}}/3389/g" qemu-launch.sh
-sed -Ei 's/-monitor\s+.+$/-monitor stdio \\/g' qemu-launch.sh
-chmod +x qemu-launch.sh
-
-# Maunch VM with install disk
-./launch.sh -boot d -drive file="PathToTheWindowsInstallDisk",media=cdrom -drive file=virtio-win.iso,media=cdrom
+# Replace PathToTheWindowsInstallDisk with the path to the Windows install disk
+qemu-system-x86_64 \
+  -name "NWN2Server" \
+  -runas $USER \
+  \
+  -enable-kvm \
+  -cpu host \
+  -smp cores=1,threads=1,sockets=1 \
+  -m 2.5G \
+  \
+  -drive file="./nwn2server-vmdisk.raw",format=raw,if=virtio \
+  \
+  -boot d \
+  -drive file="PathToTheWindowsInstallDisk",media=cdrom \
+  -drive file=virtio-win.iso,media=cdrom \
+  \
+  -device virtio-net-pci,netdev=net0 \
+  -netdev user,id=net0,hostname=nwn2server \
+  \
+  -device piix3-usb-uhci \
+  -device pvpanic \
+  \
+  -vga qxl \
+  -spice addr=127.0.0.1,port=5900,disable-ticketing \
+  -device usb-tablet \
+  -device virtio-serial \
+  -chardev spicevmc,id=vdagent,name=vdagent \
+  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
+  \
+  -monitor stdio
 ```
-
-- Configure your windoze as needed
+- Connect to the VM using a SPICE client (ex: [virt-viewer](https://virt-manager.org/download/)) on `127.0.0.1:5900`
+- Configure your windows VM as needed
     + During OS install, you will need to add drivers located in the virtio-win disk `X:\viostor\2k12R2\amd64\`
     + Run the following commands in powershell to enable WinRM remote control:
       ```powershell
@@ -103,10 +121,10 @@ chmod +x qemu-launch.sh
 
       winrm set winrm/config/service '@{AllowUnencrypted="true"}'
       ```
-    + Optionnaly update the windows machine & clean windows updates:
+    + Optionally update the windows machine & clean windows updates:
         * `Dism.exe /online /Cleanup-Image /StartComponentCleanup`
         * `Dism.exe /online /Cleanup-Image /SPSuperseded`
-    + Defragment & fill empty files with 0 using `sdelete.exe -z C:` for better compression
+    + Optionally defragment & fill empty files with 0 using `sdelete.exe -z C:` for better compression
 
 - Shutdown the windows VM
 - Compress the disk image using `xz -k -T0 nwn2server-vmdisk.raw`
