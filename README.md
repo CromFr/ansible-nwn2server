@@ -102,7 +102,7 @@ qemu-system-x86_64 \
   -device pvpanic \
   \
   -vga qxl \
-  -spice addr=127.0.0.1,port=5900,disable-ticketing \
+  -spice addr=127.0.0.1,port=3389,disable-ticketing \
   -device usb-tablet \
   -device virtio-serial \
   -chardev spicevmc,id=vdagent,name=vdagent \
