@@ -80,7 +80,7 @@ wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-vir
 - Start the Qemu virtual machine on your host
 ```sh
 # Replace PathToTheWindowsInstallDisk with the path to the Windows install disk
-qemu-system-x86_64 \
+sudo qemu-system-x86_64 \
   -name "NWN2Server" \
   -runas $USER \
   \
