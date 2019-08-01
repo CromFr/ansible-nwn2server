@@ -41,10 +41,5 @@ cp --parents -v \
 	\
 	nwn2server.exe \
 	\
-	Newtonsoft.Json*.dll \
-	NWNScriptJIT.dll \
-	NWNScriptJITIntrinsics.dll \
-	Microsoft.VC80*.manifest \
-	\
 	"$DEST"
 
