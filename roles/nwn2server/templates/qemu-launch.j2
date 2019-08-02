@@ -12,8 +12,8 @@ qemu-system-x86_64 \
 	\
 	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}",format={{qemu_disk_format}},if=virtio,cache=none \
 	\
-	-device virtio-net-pci,netdev=net0 \
-	-netdev user,id=net0,hostname=nwn2server,hostfwd=udp:0.0.0.0:{{nwn2server_port}}-:{{nwn2server_port}},hostfwd=tcp:127.0.0.1:{{winrm_port}}-:5985 \
+	-netdev tap,id=tap0,ifname=tap0,script=$PWD/qemu-ifup,downscript=$PWD/qemu-ifdown \
+	-device virtio-net-pci,netdev=tap0,mac=01:23:45:67:89:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
 	\
 	-device piix3-usb-uhci \
 	-device pvpanic \

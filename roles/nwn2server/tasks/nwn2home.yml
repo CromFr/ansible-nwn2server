@@ -18,29 +18,39 @@
     - "{{nwn2_path_root}}/home/servervault"
     - "{{nwn2_path_root}}/home/tlk"
 
+- name: Create NWN2 override tmpfs backup folder
+  become: true
+  become_user: "{{unprivileged_user}}"
+  file:
+    path: "{{nwn2_path_root}}/home/override.disk"
+    state: directory
+  when: nwn2server_override_tmpfs
+
 - name: Setup tmpfs for override folder
   mount:
     path: "{{nwn2_path_root}}/home/override"
     src: tmpfs
     fstype: tmpfs
-    opts: nodev,nosuid,size={{nwn2server_override_size}}
+    opts: nodev,nosuid,size={{nwn2server_override_maxsize}}
     dump: 0
     passno: 0
     state: mounted
   register: override_tmpfs_setup
+  when: nwn2server_override_tmpfs
 
 - name: Copy tmpfs restore service file
   template:
     src: nwn2server-tmpfs-restore@.service.j2
     dest: /etc/systemd/system/nwn2server-tmpfs-restore@.service
     mode: 0644
+  when: nwn2server_override_tmpfs
 
 - name: Enable tmpfs restore service
   systemd:
     name: nwn2server-tmpfs-restore@{{nwn2_path_root | basename}}.service
     state: started
     enabled: yes
-  when: override_tmpfs_setup.changed
+  when: override_tmpfs_setup.changed && nwn2server_override_tmpfs
 
 
 

@@ -7,8 +7,7 @@ function winrm(){
 	python3 -c "
 import winrm
 import sys
-session = winrm.Session('127.0.0.1:{{winrm_port}}', auth=('{{windows_user}}','{{windows_password}}'))
-# print(\"exec: \\\"$CMD\\\"\")
+session = winrm.Session('{{nwn2server_private_ip}}:5985', auth=('{{windows_user}}','{{windows_password}}'))
 try:
 	result = session.run_cmd(\"$CMD\")
 	print('\x1b[31m' + result.std_err.decode('utf-8') + '\x1b[0m')

@@ -10,8 +10,6 @@ nwn2_path_root: /srv/nwn2server
 # Change this path to set a custom dir to provision nwn2server additional DLL files (that can be versionned)
 nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
 
-nwn2server_port: 5121
-
 # Define this variable to download the nwn2server game files from another server (compressed zip format)
 # If set to "", it will upload the content from staging/nwn2server
 nwn2server_gamefiles_downloadurl: ""

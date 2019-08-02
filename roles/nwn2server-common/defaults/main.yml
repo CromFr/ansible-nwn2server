@@ -3,6 +3,4 @@
 unprivileged_user: nwn2
 unprivileged_uid: 1000
 
-use_ufw: True
-
 install_nwnlibd_tools: True

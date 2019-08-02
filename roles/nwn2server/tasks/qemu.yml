@@ -65,5 +65,48 @@
 - name: "UFW: Enable NWN2Server port"
   ufw:
     rule: allow
-    port: "{{nwn2server_port}}"
+    port: "{{nwn2server_public_port}}"
     proto: udp
+
+- name: Configure UFW to forward {{nwn2server_public_port}} to nwn2server (nat table)
+  blockinfile:
+    path: /etc/ufw/before.rules
+    insertafter: '^\*nat'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: Qemu NAT setup"
+    block: |
+      -A POSTROUTING -o {{ansible_facts.ansible_default_ipv4.interface}} -j MASQUERADE
+      -A PREROUTING -p udp --dport {{nwn2server_public_port}} -j DNAT --to {{nwn2server_private_ip}}:5121
+  register: ufw_config_nat
+
+- name: Configure UFW to forward {{nwn2server_public_port}} to nwn2server (filter table)
+  blockinfile:
+    path: /etc/ufw/before.rules
+    insertafter: '^\*filter'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: Qemu filter setup"
+    block: |
+      -A FORWARD -d {{nwn2server_private_ip}} -p udp --dport 5121 -j ACCEPT
+  register: ufw_config_filter
+
+- name: Reload UFW
+  systemd:
+    name: "ufw.service"
+    state: reload
+  when: ufw_config_nat.changed || ufw_config_filter.changed
+
+- name: Set static IP for the VM via dhcpd.conf
+  blockinfile:
+    path: /etc/dhcp/dhcpd.conf
+    insertafter: '^\s*subnet\s+10.0.2.0\s*\{.*?\}\s*$'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: DHCP host for {{nwn2_path_root}}"
+    block: |
+      host {
+        hardware ethernet 01:23:45:67:89:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}};
+        fixed-address {{nwn2server_private_ip}};
+      }
+  register: dhcpd_conf
+
+- name: Reload DHCP server
+  systemd:
+    name: "isc-dhcp-server.service"
+    state: reload
+  when: dhcpd_conf.changed

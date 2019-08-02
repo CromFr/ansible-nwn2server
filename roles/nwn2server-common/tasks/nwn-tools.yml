@@ -1,6 +1,6 @@
 
 
-- name: Install nwn-lib-d + LcdaTools
+- name: Install nwn-lib-d tools
   get_url:
     url: "{{item.url}}"
     dest: "/usr/local/bin/{{item.name}}"

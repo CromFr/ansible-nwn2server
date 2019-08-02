@@ -35,7 +35,11 @@
 # UFW
 - name: UFW Setup
   include_tasks: ufw.yml
-  when: use_ufw
+  tags: [base]
+
+# qemu network
+- name: Qemu network setup
+  include_tasks: tap0-network.yml
   tags: [base]
 
 # nwn-lib-d
