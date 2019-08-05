@@ -113,6 +113,9 @@ sudo qemu-system-x86_64 \
 - Connect to the VM using a SPICE client (ex: [virt-viewer](https://virt-manager.org/download/)) on `127.0.0.1:5900`
 - Configure your windows VM as needed
     + During OS install, you will need to add drivers located in the virtio-win disk `X:\viostor\2k12R2\amd64\`
+    + Once windows in installed:
+      * Open the Windows device manager, and for each unrecognized device, right click on it -> update driver, and make windows search drivers in the virtio-win disk.
+      * Install the latest [spice-guest-tools](https://www.spice-space.org/download.html)
     + Run the following commands in powershell to enable WinRM remote control:
       ```powershell
       Invoke-WebRequest -Uri https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -OutFile ConfigureRemotingForAnsible.ps1
