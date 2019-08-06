@@ -14,7 +14,7 @@
     url_username: "{{nwn2server_gamefiles_downloadurl | urlsplit('username')}}"
     url_password: "{{nwn2server_gamefiles_downloadurl | urlsplit('password')}}"
   when:
-    - nwn2server_install.failed
+    - nwn2server_install is failed
     - nwn2server_gamefiles_downloadurl != ""
 
   retries: 3
@@ -26,7 +26,7 @@
     src: '%TEMP%\{{nwn2server_gamefiles_downloadurl | urlsplit("path") | basename}}'
     dest: 'C:\nwn2server'
   when:
-    - nwn2server_install.failed
+    - nwn2server_install is failed
     - nwn2server_gamefiles_downloadurl != ""
 
 - name: Install NWN2Server using local files
@@ -34,7 +34,7 @@
     src: "{{playbook_dir}}/staging/nwn2server"
     dest: 'C:\'
   when:
-    - nwn2server_install.failed
+    - nwn2server_install is failed
     - nwn2server_gamefiles_downloadurl == ""
 
 - name: Install NWN2Server additional DLL files

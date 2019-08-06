@@ -24,8 +24,6 @@
     src: tmpfs
     fstype: tmpfs
     opts: nodev,nosuid,size={{nwn2server_override_size}}
-    dump: 0
-    passno: 0
     state: mounted
   register: override_tmpfs_setup
 

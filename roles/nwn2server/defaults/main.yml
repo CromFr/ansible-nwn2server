@@ -13,7 +13,7 @@ nwn2_path_root: /srv/nwn2server
 nwn2server_name: "NWN2 server managed with Ansible"
 nwn2server_playerpassword: ""
 nwn2server_dmpassword: ""
-nwn2server_port: 5121
+nwn2server_port: "5121"
 
 # Override folder will be loaded into RAM. This is the maximum size of the override folder
 nwn2server_override_size: 2G

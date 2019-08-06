@@ -1,12 +1,11 @@
 
 - name: Packages install
   apt:
-    name: "{{item}}"
-  with_items:
-    - git
-    - curl
-    - wget
-    - unzip
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
   tags: [base]
 
 
