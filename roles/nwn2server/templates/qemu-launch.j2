@@ -2,10 +2,25 @@
 
 set -euo pipefail
 
+toBytes(){
+	echo $@ | awk \
+	'BEGIN{IGNORECASE = 1}
+	function printpower(n,b,p) {printf "%u\n", n*b^p; next}
+	/[0-9]$/{print $1;next};
+	/KB?$/{printpower($1,  2, 10)};
+	/MB?$/{printpower($1,  2, 20)};
+	/GB?$/{printpower($1,  2, 30)};
+	/TB?$/{printpower($1,  2, 40)};'
+}
+
+# Get get huge page size
+PAGE_SIZE=$(toBytes $(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$"))
+REQUIRED_PAGES=$(($(toBytes {{qemu_memory}}M) / $PAGE_SIZE))
+
 FREE_PAGES=$(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$")
-if [[ $FREE_PAGES < {{qemu_memory}} ]]; then
+if [[ $FREE_PAGES < $REQUIRED_PAGES ]]; then
 	CURR_PAGES=$(grep "HugePages_Total" /proc/meminfo | grep -oE "[0-9]+$")
-	NEW_ALLOC=$(($CURR_PAGES + ({{qemu_memory}} - $FREE_PAGES)))
+	NEW_ALLOC=$(($CURR_PAGES + ($REQUIRED_PAGES - $FREE_PAGES)))
 	echo "Allocating $NEW_ALLOC huge memory pages"
 	echo $NEW_ALLOC > /proc/sys/vm/nr_hugepages
 fi
