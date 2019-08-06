@@ -5,20 +5,37 @@
     name: nfs-server
     state: latest
 
+
+- name: remove legacy exports
+  blockinfile:
+    path: /etc/exports
+    state: absent
+  register: nfsexport_rmlegacy
+
 # TODO: Breaks file rights as anybody (on localhost) can mount and
 #       read/writes files exported as the unprivileged user
-- name: Set exports
+- name: Set exports for NWN2 home
   blockinfile:
     path: /etc/exports
     insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: nwn2 home directory"
     block: |
       "{{nwn2_path_root}}"               127.0.0.1(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check,crossmnt)
+  register: nfsexport_home
+
+- name: Set exports for NWN2 override
+  blockinfile:
+    path: /etc/exports
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: tmpfs override directory"
+    block: |
       "{{nwn2_path_root}}/home/override" 127.0.0.1(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check)
-  register: nfsexport
+  register: nfsexport_override
+  when: nwn2server_override_tmpfs
 
 - name: Update exports
   command: exportfs -ra
-  when: nfsexport.changed
+  when: nfsexport_home.changed or nfsexport_override.changed or nfsexport_rmlegacy.changed
 
 - name: Start & enable NFS service
   systemd:
