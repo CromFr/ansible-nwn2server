@@ -34,6 +34,9 @@ qemu_disk_format: "raw"
 # NWN2Server uses only 1 thread, but more CPU can be allocated to take care of windows tasks.
 qemu_smp: "cores=1,threads=1,sockets=1"
 
+# Amount of RAM dedicated to the VM in Megabytes
+qemu_memory: "2560"
+
 # Remote desktop port
 qemu_spice_port: 3389
 
