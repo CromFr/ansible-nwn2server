@@ -21,6 +21,7 @@ nwn2server_public_port: 5121
 nwn2server_name: "NWN2 server managed with Ansible"
 nwn2server_playerpassword: ""
 nwn2server_dmpassword: ""
+nwn2server_port: 5121
 
 # If true, the NWN2 override folder will be loaded into RAM for improving
 # server performance. The module files should be stored in the override folder
@@ -46,6 +47,9 @@ qemu_disk_format: "raw"
 # Qemu processor allocation (-smp arg).
 # NWN2Server uses only 1 thread, but more CPU can be allocated to take care of windows tasks.
 qemu_smp: "cores=1,threads=1,sockets=1"
+
+# Amount of RAM dedicated to the VM in Megabytes
+qemu_memory: "2560"
 
 # Remote desktop port
 qemu_spice_port: 3389

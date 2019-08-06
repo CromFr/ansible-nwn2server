@@ -1,11 +1,10 @@
 
 - name: Install MySQL package
   apt:
-    name: "{{item}}"
+    name:
+      - mariadb-server
+      - python-mysqldb
     state: latest
-  with_items:
-    - mariadb-server
-    - python-mysqldb
 
 - name: Start & enable MySQL service
   systemd:

@@ -2,12 +2,11 @@
 
 - name: Qemu Packages install
   apt:
-    name: "{{item}}"
-  with_items:
-    - qemu
-    - qemu-kvm
-    - python3
-    - python3-winrm
+    name:
+      - qemu
+      - qemu-kvm
+      - python3
+      - python3-winrm
 
 - name: Check if qemu disk is present
   command: ls "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
@@ -20,7 +19,7 @@
     src: "{{qemu_disk_download_url}}"
     dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | splitext)[1]}}"
   when:
-    - chk_qemudisk | failed
+    - chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') == ''
 
 - name: Download Qemu compressed disk from URL
@@ -29,7 +28,7 @@
     url: "{{qemu_disk_download_url}}"
     dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
   when:
-    - chk_qemudisk | failed
+    - chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
 - name: Extract Qemu disk
