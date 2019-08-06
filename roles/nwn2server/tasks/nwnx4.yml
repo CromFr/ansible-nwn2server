@@ -12,18 +12,25 @@
     state: directory
     owner: "{{unprivileged_user}}"
 
+- name: Check if nwnx4 files are present
+  stat:
+    path: /tmp/nwnx4
+  register: nwnx4_extracted
+
 - name: Install nwnx files
   copy:
     remote_src: true
-    src: "{{item}}"
+    src: "{{item.path}}"
     dest: "{{nwn2_path_root}}/nwnx4/"
-    mode: 755
+    mode: "{{item.mode}}"
   with_items:
-    - /tmp/nwnx4/NWNX4_Controller.exe
-    - /tmp/nwnx4/NWNX4_GUI.exe
-    - /tmp/nwnx4/NWNX4_Hook.dll
-    - /tmp/nwnx4/xp_mysql.dll
-    - /tmp/nwnx4/xp_time.dll
+    - {path: /tmp/nwnx4/NWNX4_Controller.exe, mode: 755}
+    - {path: /tmp/nwnx4/NWNX4_GUI.exe, mode: 755}
+    - {path: /tmp/nwnx4/NWNX4_Hook.dll, mode: 755}
+    - {path: /tmp/nwnx4/xp_mysql.dll, mode: 755}
+    - {path: /tmp/nwnx4/xp_time.dll, mode: 755}
+    - {path: /tmp/nwnx4/licence.txt, mode: 644}
+  when: nwnx4_extracted.stat.exists
 
 - name: Install nwnx4 config files
   template:
