@@ -3,7 +3,7 @@
 set -euo pipefail
 
 FREE_PAGES=$(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$")
-if [[ $FREE_PAGES < 2560 ]]:
+if [[ $FREE_PAGES < 2560 ]]; then
 	CURR_PAGES=$(grep "HugePages_Total" /proc/meminfo | grep -oE "[0-9]+$")
 	NEW_ALLOC=$(($CURR_PAGES + (2560 - $FREE_PAGES)))
 	echo "Allocating $NEW_ALLOC huge memory pages"
