@@ -1,4 +1,9 @@
 
+- name: Enable universe & multiverse package repository
+  apt_repository:
+    repo: deb http://archive.ubuntu.com/ubuntu bionic universe multiverse
+    state: present
+
 - name: Packages install
   apt:
     name:

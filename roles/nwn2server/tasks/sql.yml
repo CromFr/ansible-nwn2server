@@ -3,7 +3,7 @@
   apt:
     name:
       - mariadb-server
-      - python-mysqldb
+      - mariadb-client
     state: latest
 
 - name: Start & enable MySQL service
