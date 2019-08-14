@@ -20,8 +20,8 @@
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK: mounts for {{nwn2_path_root}}"
     block: |
-      "{{nwn2_path_root}}"               {{qemu_tap_network}}/24(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check,crossmnt)
-      "{{nwn2_path_root}}/home/override" {{qemu_tap_network}}/24(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check)
+      "{{nwn2_path_root}}"               {{nwn2server_private_ip}}/24(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check,crossmnt)
+      "{{nwn2_path_root}}/home/override" {{nwn2server_private_ip}}/24(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check)
   register: nfsexport
 
 - name: Update exports
