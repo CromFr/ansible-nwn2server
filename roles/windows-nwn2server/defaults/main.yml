@@ -1,4 +1,6 @@
 production: False
+
+# Just checking windows updates can take a lot of time
 windows_update: False
 
 # Host unprivileged user info
@@ -13,3 +15,5 @@ nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
 # Define this variable to download the nwn2server game files from another server (compressed zip format)
 # If set to "", it will upload the content from staging/nwn2server
 nwn2server_gamefiles_downloadurl: ""
+
+qemu_tap_network: "10.0.2.0"

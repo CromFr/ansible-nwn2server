@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ toBytes(){
 
 # Get get huge page size
 PAGE_SIZE=$(toBytes $(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$"))
-REQUIRED_PAGES=$(($(toBytes {{qemu_memory}}M) / $PAGE_SIZE))
+REQUIRED_PAGES=$(($(toBytes {{qemu_memory}}) / $PAGE_SIZE))
 
 FREE_PAGES=$(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$")
 if [[ $FREE_PAGES < $REQUIRED_PAGES ]]; then
@@ -23,6 +23,14 @@ if [[ $FREE_PAGES < $REQUIRED_PAGES ]]; then
 	NEW_ALLOC=$(($CURR_PAGES + ($REQUIRED_PAGES - $FREE_PAGES)))
 	echo "Allocating $NEW_ALLOC huge memory pages"
 	echo $NEW_ALLOC > /proc/sys/vm/nr_hugepages
+fi
+
+# Setup port forwarding to the VM
+if ! iptables -t nat -C PREROUTING -p udp --dport {{nwn2server_public_port}} -j DNAT --to {{nwn2server_private_ip}}:5121; then
+	iptables -t nat -A PREROUTING -p udp --dport {{nwn2server_public_port}} -j DNAT --to {{nwn2server_private_ip}}:5121
+fi
+if ! iptables -C FORWARD -d {{nwn2server_private_ip}} -p udp --dport 5121 -j ACCEPT; then
+	iptables -A FORWARD -d {{nwn2server_private_ip}} -p udp --dport 5121 -j ACCEPT
 fi
 
 exec \
@@ -33,13 +41,13 @@ qemu-system-x86_64 \
 	-enable-kvm \
 	-cpu host \
 	-smp {{qemu_smp}} \
-	-m {{qemu_memory}}M \
+	-m {{qemu_memory}} \
 	-mem-path /dev/hugepages \
 	\
 	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}",format={{qemu_disk_format}},if=virtio,cache=none \
 	\
-	-netdev tap,id=tap0,ifname=tap0,script=$PWD/qemu-ifup,downscript=$PWD/qemu-ifdown \
-	-device virtio-net-pci,netdev=tap0,mac=01:23:45:67:89:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
+	-netdev tap,id=tap0,ifname=tap0,script=no,downscript=no \
+	-device virtio-net-pci,netdev=tap0,mac=02:00:00:00:00:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
 	\
 	-device piix3-usb-uhci \
 	-device pvpanic \

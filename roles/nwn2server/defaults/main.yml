@@ -3,15 +3,17 @@
 unprivileged_user: nwn2
 unprivileged_uid: 1000
 
+# Network IP reserved to Qemu VMs. Must be a /24 IP.
+qemu_tap_network: "10.0.2.0"
 
 # Base path where data will be stored. Must be a direct sub-folder of /srv
 # (see service files)
 nwn2_path_root: /srv/nwn2server
-# Private IP to assign to the NWN2 server VM. Must be in the 10.0.2.0/24
-# network, and not 10.0.2.1.
+# Private IP to assign to the NWN2 server VM. Must be in the {{qemu_tap_network}}/24
+# network, and not the first address of the network.
 # Note: the last number will be used to set the
 # virtual machine mac address
-nwn2server_private_ip: 10.0.2.10
+nwn2server_private_ip: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.10"
 # The port used to connect to the nwn2server from the outside. Internally the
 # nwn2server VM will always listen to 5121, and the host will forward ports to
 # the appropriate VM
@@ -48,14 +50,14 @@ qemu_disk_format: "raw"
 # NWN2Server uses only 1 thread, but more CPU can be allocated to take care of windows tasks.
 qemu_smp: "cores=1,threads=1,sockets=1"
 
-# Amount of RAM dedicated to the VM in Megabytes
-qemu_memory: "2560"
+# Amount of RAM dedicated to the VM
+qemu_memory: "2.5G"
 
 # Remote desktop port
 qemu_spice_port: 3389
 
 # MySQL host address in the tap0 network. should not be changed.
-mysql_host: 10.0.2.1
+mysql_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
 mysql_database: "nwnx"
 mysql_user: "nwnx"
 mysql_password: "password"

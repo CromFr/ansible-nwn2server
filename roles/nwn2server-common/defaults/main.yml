@@ -4,3 +4,6 @@ unprivileged_user: nwn2
 unprivileged_uid: 1000
 
 install_nwnlibd_tools: True
+
+# Network IP reserved to Qemu VMs. Must be a /24 IP.
+qemu_tap_network: "10.0.2.0"

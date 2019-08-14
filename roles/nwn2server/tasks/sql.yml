@@ -1,9 +1,10 @@
-
 - name: Install MySQL package
   apt:
     name:
       - mariadb-server
       - mariadb-client
+      - python3-pymysql
+      - python-pymysql
     state: latest
 
 - name: Start & enable MySQL service
@@ -12,10 +13,11 @@
     state: started
     enabled: yes
 
-- name: Add nwnx table
+- name: Add nwnx database
   mysql_db:
     name: nwnx
     state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Add MySQL User
   mysql_user:
@@ -23,3 +25,4 @@
     host: localhost
     password: "{{mysql_password}}"
     priv: "{{mysql_database}}.*:ALL"
+    login_unix_socket: /var/run/mysqld/mysqld.sock

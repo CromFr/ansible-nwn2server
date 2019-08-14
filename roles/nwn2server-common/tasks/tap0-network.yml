@@ -2,71 +2,105 @@
 
 - name: Qemu network packages install
   apt:
-    name: "{{item}}"
-  with_items:
-    - isc-dhcp-server
-
-- name: Check if TAP device exists
-  shell: ip link show tap0
-  register: tap_device_check
-  ignore_errors: yes
-  changed_when: False
+    name:
+      - dnsmasq
 
 - name: Create TAP device
-  shell: |
-    ip tuntap add name tap0 mode tap
-    ip link set tap0 up
-  when: tap_device_check.rc != 0
+  copy:
+    dest: /etc/systemd/network/tap0.netdev
+    content: |
+      [NetDev]
+      Name=tap0
+      Kind=tap
+  register: tap0_netdev
 
+- name: Set TAP address
+  copy:
+    dest: /etc/systemd/network/tap0.network
+    content: |
+      [Match]
+      Name=tap0
 
+      [Link]
+      MACAddress=02:00:00:00:00:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}}
+      RequiredForOnline=no
 
-- name:
-  interfaces_file:
-    dest: /etc/network/interfaces.d/tap0.cfg
-    iface: tap0
-    option: "{{item.option}}"
-    value: "{{item.value}}"
-  with_items:
-    - {option: address, value: 10.0.2.1}
-    - {option: netmask, value: 255.255.255.0}
+      [Network]
+      Description=QEMU dedicated network
+      Address={{qemu_tap_network.split('.')[0:3] | join('.')}}.1/24
+      LinkLocalAddressing=ipv4
+      IPForward=ipv4
+      IPMasquerade=yes
+      ConfigureWithoutCarrier=yes
+      IgnoreCarrierLoss=yes
+  register: tap0_network
 
-- name: make interface up
-  net_interface:
-    name: tap0
-    enabled: True
-
-- name: Configure UFW to NAT virtual machine's network
-  blockinfile:
-    path: /etc/ufw/before.rules
-    insertbefore: '^\*filter'
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: Qemu NAT setup"
-    block: |
-      *nat
-      :PREROUTING ACCEPT [0:0]
-      COMMIT
-
-- name: Configure DHCP server to listen to tap0
-  blockinfile:
-    path: /etc/default/isc-dhcp-server
-    block: |
-      INTERFACESv4="tap0"
-
-- name: Configure tap0 DHCP server
-  blockinfile:
-    path: /etc/dhcp/dhcpd.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: tap0 DHCP server"
-    block: |
-      option domain-name "";
-      option domain-name-servers 9.9.9.9, 1.1.1.1;
-      option subnet-mask 255.255.255.0;
-      option routers 10.0.2.1;
-
-      subnet 10.0.2.0 netmask 255.255.255.0 {
-        range 10.0.2.20 10.0.2.100;
-      }
-
-- name: Enable & start DHCP server
+- name: Reload network config
   systemd:
-    name: "isc-dhcp-server.service"
+    name: "systemd-networkd.service"
+    state: restarted
+  when: tap0_netdev.changed or tap0_network.changed
+
+# TODO: running this service multiple times leads to duplicated iptables rules
+- name: Setup service for configuring tap0 interface &  routing
+  copy:
+    dest: /etc/systemd/system/tap0-configure.service
+    content: |
+      [Unit]
+      Description=Set IP address on tap0
+      After=systemd-networkd-wait-online.service
+      Before=dnsmasq.service
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=-/sbin/ip addr add {{qemu_tap_network.split('.')[0:3] | join('.')}}.1/24 dev tap0
+      # ExecStartPre=/sbin/iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE
+      # ExecStartPre=/sbin/iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      # ExecStartPre=/sbin/iptables -A FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT
+      ExecStart=/sbin/ip link set tap0 up
+
+      [Install]
+      RequiredBy=multi-user.target
+
+- name: Enable & start tap0 set ip service
+  systemd:
+    name: "tap0-configure.service"
     state: started
     enabled: yes
+
+- name: Configure dnsmasq for DNS + DHCP
+  blockinfile:
+    path: /etc/dnsmasq.d/qemu-tap0
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: tap0 DNS server"
+    block: |
+      interface=tap0
+      except-interface=lo
+      listen-address={{qemu_tap_network.split('.')[0:3] | join('.')}}.1
+      bind-interfaces
+      cache-size=1000
+
+      dhcp-option=6,{{qemu_tap_network.split('.')[0:3] | join('.')}}.1 # DNS server
+      dhcp-range={{qemu_tap_network.split('.')[0:3] | join('.')}}.100,{{qemu_tap_network.split('.')[0:3] | join('.')}}.200,255.255.255.0
+      dhcp-authoritative
+
+- name: Enable & start dnsmasq
+  systemd:
+    name: "dnsmasq.service"
+    state: started
+    enabled: yes
+
+
+- name: "UFW: configure firewall for tap0"
+  ufw:
+    rule: allow
+    port: "{{item.port}}"
+    proto: "{{item.proto}}"
+    interface: tap0
+    direction: in
+  with_items:
+    - { port: "53", proto: "udp" } # DNS
+    - { port: "67", proto: "udp" } # DHCP
+    - { port: "3306", proto: "tcp" } # MySQL
+    - { port: "111", proto: "any" } # NFS Server
+    - { port: "2049", proto: "any" } # NFS Server
