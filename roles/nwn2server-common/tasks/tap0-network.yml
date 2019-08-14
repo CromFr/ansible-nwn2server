@@ -41,7 +41,7 @@
     state: restarted
   when: tap0_netdev.changed or tap0_network.changed
 
-# TODO: running this service multiple times leads to duplicated iptables rules
+# TODO: Find a more elegant way to configure tap0
 - name: Setup service for configuring tap0 interface &  routing
   copy:
     dest: /etc/systemd/system/tap0-configure.service
@@ -53,10 +53,15 @@
 
       [Service]
       Type=oneshot
+      RemainAfterExit=yes
       ExecStartPre=-/sbin/ip addr add {{qemu_tap_network.split('.')[0:3] | join('.')}}.1/24 dev tap0
-      # ExecStartPre=/sbin/iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE
-      # ExecStartPre=/sbin/iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-      # ExecStartPre=/sbin/iptables -A FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT
+      ExecStartPre=/bin/bash -c " \
+        (iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE \
+          || iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE) \
+        && \
+        (iptables -C FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT \
+          || iptables -A FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT) \
+        "
       ExecStart=/sbin/ip link set tap0 up
 
       [Install]
