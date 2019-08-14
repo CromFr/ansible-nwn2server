@@ -18,24 +18,15 @@
   blockinfile:
     path: /etc/exports
     insertafter: EOF
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: nwn2 home directory"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: mounts for {{nwn2_path_root}}"
     block: |
-      "{{nwn2_path_root}}"               127.0.0.1(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check,crossmnt)
-  register: nfsexport_home
-
-- name: Set exports for NWN2 override
-  blockinfile:
-    path: /etc/exports
-    insertafter: EOF
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: tmpfs override directory"
-    block: |
-      "{{nwn2_path_root}}/home/override" 127.0.0.1(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check)
-  register: nfsexport_override
-  when: nwn2server_override_tmpfs
+      "{{nwn2_path_root}}"               {{qemu_tap_network}}/24(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check,crossmnt)
+      "{{nwn2_path_root}}/home/override" {{qemu_tap_network}}/24(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_uid}},no_subtree_check)
+  register: nfsexport
 
 - name: Update exports
   command: exportfs -ra
-  when: nfsexport_home.changed or nfsexport_override.changed or nfsexport_rmlegacy.changed
+  when: nfsexport.changed or nfsexport_rmlegacy.changed
 
 - name: Start & enable NFS service
   systemd:
