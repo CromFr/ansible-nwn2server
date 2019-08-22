@@ -58,6 +58,7 @@
     - vcredist2010
     - dotnet4.0 #Needed for AuroraServerNWScript
     - dotnet4.5 #Needed for CLR scripts
+    - dotnet4.7 #Needed xp_bugfix TLS support
     - directx
   register: windows_packages
 
