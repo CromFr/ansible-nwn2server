@@ -22,5 +22,5 @@
   changed_when: False
 
 - name: Mount network drive
-  win_shell: 'psexec -i 1 -s net use Z: "\\{{qemu_tap_network.split('.')[0:3] | join('.')}}.1{{nwn2_path_root}}" /persistent:yes'
+  win_shell: 'psexec -i 1 -s net use Z: "\\{{qemu_tap_network.split(".")[0:3] | join(".")}}.1{{nwn2_path_root}}" /persistent:yes'
   when: chk is failed
