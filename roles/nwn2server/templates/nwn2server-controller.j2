@@ -2,19 +2,20 @@
 
 
 function winrm(){
-	CMD=$(echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\\\\\"/g')
+    CMD=$(echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\\\\\"/g')
 
-	python3 -c "
+    python3 -c "
 import winrm
 import sys
 session = winrm.Session('{{nwn2server_private_ip}}:5985', auth=('{{windows_user}}','{{windows_password}}'))
 try:
-	result = session.run_cmd(\"$CMD\")
-	print('\x1b[31m' + result.std_err.decode('utf-8') + '\x1b[0m')
-	print(result.std_out.decode('utf-8'))
-except:
-	print(sys.exc_info())
-	sys.exit(-1)
+    result = session.run_cmd(\"$CMD\")
+    print('\x1b[31m' + result.std_err.decode('cp437', errors='ignore') + '\x1b[0m')
+    print(result.std_out.decode('cp437', errors='ignore'))
+except Exception as e:
+    print('Exception: ', e)
+    print(sys.exc_info())
+    sys.exit(-1)
 sys.exit(result.status_code)
 "
 }
@@ -22,21 +23,28 @@ sys.exit(result.status_code)
 
 if [ "$1" == "start" ]; then
     IS_RUNNING=$(winrm "tasklist" | grep nwn2server.exe | wc -l)
-    if [[ $IS_RUNNING > 0 ]]; then
+    if (( $IS_RUNNING > 0 )); then
         echo "NWN2Server is already running"
         exit
     fi
     winrm "psexec -nobanner -d -i 1 -s C:/Users/Administrator/Desktop/nwn2server-start.bat" || true
 elif [ "$1" == "stop" ]; then
     winrm "psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe"
-    while [[ $(winrm "tasklist" | grep nwn2server.exe | wc -l) > 0 ]]; do
+    while (( $(winrm "tasklist" | grep nwn2server.exe | wc -l) > 0 )); do
         sleep 1
     done
+elif [ "$1" == "status" ]; then
+    if (( $(winrm "tasklist" | grep -E "nwn2server.exe|nwnx4_gui.exe" | wc -l) > 0 )); then
+        echo "Running"
+    else
+        echo "Stopped"
+        exit 1
+    fi
 elif [ "$1" == "kill" ]; then
     winrm "taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe /F"
 elif [ "$1" == "restart" ]; then
     IS_NWNX4_RUNNING=$(winrm "tasklist" | grep nwnx4_gui.exe | wc -l)
-    if [[ $IS_NWNX4_RUNNING > 0 ]]; then
+    if (( $IS_NWNX4_RUNNING > 0 )); then
         winrm "psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe"
     else
         exec $0 start
@@ -44,9 +52,10 @@ elif [ "$1" == "restart" ]; then
 elif [ "$1" == "cmd" ]; then
     winrm "$2"
 else
-    echo "Usage: $0 (start|stop|kill|restart|cmd)"
+    echo "Usage: $0 (start|stop|status|kill|restart|cmd)"
     echo "  start   Launch the startup batch file. Do nothing if already running."
     echo "  stop    Exit both NWNX4 and NWN2Server (Normal shutdown)"
+    echo "  status  Request if the server is running or stopped."
     echo "  kill    Force kill both NWNX4 and NWN2Server (similar to kill -9)"
     echo "  restart Exit only NWN2Server (Normal shutdown). The NWNX4 process watchdog will restart NWN2server."
     echo "  cmd     Launch a windows command. Example: $0 cmd tasklist"

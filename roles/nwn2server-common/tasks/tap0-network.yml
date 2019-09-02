@@ -95,17 +95,10 @@
     state: started
     enabled: yes
 
-
+# TODO: Would be better to have a more restricted access to the host.
+#       This is the quick & easy solution for letting NFS packets through.
 - name: "UFW: configure firewall for tap0"
   ufw:
     rule: allow
-    port: "{{item.port}}"
-    proto: "{{item.proto}}"
     interface: tap0
     direction: in
-  with_items:
-    - { port: "53", proto: "udp" } # DNS
-    - { port: "67", proto: "udp" } # DHCP
-    - { port: "3306", proto: "tcp" } # MySQL
-    - { port: "111", proto: "any" } # NFS Server
-    - { port: "2049", proto: "any" } # NFS Server

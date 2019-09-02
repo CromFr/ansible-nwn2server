@@ -7,10 +7,18 @@
       - python-pymysql
     state: latest
 
+- name: Set MySQL to listen on all interfaces
+  lineinfile:
+    dest: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^\s*bind-address\s*=\s*.+$'
+    insertafter: '\[mysqld\]'
+    line: 'bind-address = 0.0.0.0'
+  register: conf_changed
+
 - name: Start & enable MySQL service
   systemd:
     name: mysql.service
-    state: started
+    state: "{{'restarted' if conf_changed.changed else 'started'}}"
     enabled: yes
 
 - name: Add nwnx database
@@ -22,7 +30,9 @@
 - name: Add MySQL User
   mysql_user:
     name: "{{mysql_user}}"
-    host: localhost
+    host: '10.0.2.%'
     password: "{{mysql_password}}"
     priv: "{{mysql_database}}.*:ALL"
     login_unix_socket: /var/run/mysqld/mysqld.sock
+
+

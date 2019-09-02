@@ -17,10 +17,10 @@ toBytes(){
 PAGE_SIZE=$(toBytes $(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$"))
 REQUIRED_PAGES=$(($(toBytes {{qemu_memory}}) / $PAGE_SIZE))
 
-FREE_PAGES=$(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$")
-if [[ $FREE_PAGES < $REQUIRED_PAGES ]]; then
+AVAIL_PAGES=$(( $(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$") - $(grep "HugePages_Rsvd" /proc/meminfo | grep -oE "[0-9]+$") ))
+if (( $AVAIL_PAGES < $REQUIRED_PAGES )); then
 	CURR_PAGES=$(grep "HugePages_Total" /proc/meminfo | grep -oE "[0-9]+$")
-	NEW_ALLOC=$(($CURR_PAGES + ($REQUIRED_PAGES - $FREE_PAGES)))
+	NEW_ALLOC=$(($CURR_PAGES + ($REQUIRED_PAGES - $AVAIL_PAGES)))
 	echo "Allocating $NEW_ALLOC huge memory pages"
 	echo $NEW_ALLOC > /proc/sys/vm/nr_hugepages
 fi
