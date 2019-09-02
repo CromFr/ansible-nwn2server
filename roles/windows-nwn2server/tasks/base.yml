@@ -109,6 +109,19 @@
 - name: Setup Autologon
   win_command: autologon {{ansible_user}} WORKGROUP {{ansible_password}}
 
+- name: "Enable ACPI shutdown: allow shutdown without login group policy"
+  win_regedit:
+    path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system'
+    name: ShutdownWarningDialogTimeout
+    type: dword
+    data: "1"
+
+- name: "Enable ACPI shutdown: set shutdown timeout"
+  win_regedit:
+    path: 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows'
+    name: ShutdownWarningDialogTimeout
+    type: dword
+    data: "1"
 
 - name: Wallpaper color
   win_regedit:
