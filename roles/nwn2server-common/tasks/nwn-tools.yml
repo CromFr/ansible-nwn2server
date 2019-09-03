@@ -11,3 +11,4 @@
   - {name: "nwn-tlk", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-tlk.linux-x86_64"}
   - {name: "nwn-bdb", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-bdb.linux-x86_64"}
   - {name: "nwn-trn", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-trn.linux-x86_64"}
+  - {name: "nwn-srv", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-srv.linux-x86_64"}

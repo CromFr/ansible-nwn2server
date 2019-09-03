@@ -1,0 +1,6 @@
+
+- name: Copy controller script
+  template:
+    src: nwn2server-wait-empty.j2
+    dest: "{{nwn2_path_root}}/bin/nwn2server-wait-empty"
+    mode: 0755

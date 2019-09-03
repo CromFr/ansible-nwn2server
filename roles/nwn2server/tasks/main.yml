@@ -32,3 +32,5 @@
 
 # Virtualization
 - import_tasks: qemu.yml
+
+- import_tasks: tooling.yml

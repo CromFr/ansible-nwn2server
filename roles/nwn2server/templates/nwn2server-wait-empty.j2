@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set -e
+
+PIDFILE=""
+PERIOD="10"
+CONSECUTIVE="1"
+
+while :; do
+	if [[ "$1" == "" ]]; then
+		break
+	fi
+	case $1 in
+		-h|-\?|--help)
+			echo "Usage: $0 [args]"
+			echo "  -p --pidfile     Sets the file for tracking already running $0 instances."
+			echo "                   Default: none"
+			echo "  -i --interval    Time in seconds between two checks."
+			echo "                   Default: 10"
+			echo "  -n --consecutive Number of interval to wait while the server is empty"
+			echo "                   before executing commands"
+			echo "                   Default: 1"
+			echo "Return codes:"
+			echo " 1: Bad command"
+			echo " 3: Another process is already waiting with the same pidfile"
+			exit 0
+			;;
+		-p|--pidfile)
+			shift
+			PIDFILE="$1"
+			;;
+		-i|--interval)
+			shift
+			PERIOD="$1"
+			;;
+		-n|--consecutive)
+			shift
+			CONSECUTIVE="$1"
+			;;
+		*)
+			echo "Unknown argument $1"
+			exit 1
+	esac
+	shift
+done
+
+if [[ "$PIDFILE" != "" ]]; then
+	PREVPID=$(cat "$PIDFILE")
+	if [ -f "$PIDFILE" ] && kill -0 "$PREVPID" 2>/dev/null; then
+		echo "A wait-empty is already running (pidfile=$PIDFILE, pid=$PREVPID)..."
+		exit 3
+	fi
+	echo "$$" > "$PIDFILE"
+fi
+
+CNT=0
+while true; do
+	CONNECTED=$(nwn-srv bnxi {{nwn2server_private_ip}} -f json | jq -r .currentPlayers)
+
+	if (( $CONNECTED == 0 )); then
+		CNT=$(( $CNT + 1))
+		echo "$(date): $CONNECTED players connected ($CNT)"
+
+		if (( $CNT >= $CONSECUTIVE )); then
+			break
+		fi
+	else
+		CNT=0
+		echo "$(date): $CONNECTED players connected"
+	fi
+
+	sleep $PERIOD
+done
+
+if [[ "$PIDFILE" != "" ]]; then
+	rm "$PIDFILE"
+fi
