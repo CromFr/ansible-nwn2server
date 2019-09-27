@@ -45,9 +45,8 @@ while :; do
 done
 
 if [[ "$PIDFILE" != "" ]]; then
-	PREVPID=$(cat "$PIDFILE")
-	if [ -f "$PIDFILE" ] && kill -0 "$PREVPID" 2>/dev/null; then
-		echo "A wait-empty is already running (pidfile=$PIDFILE, pid=$PREVPID)..."
+	if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+		echo "A wait-empty is already running (pidfile=$PIDFILE, pid=$(cat "$PIDFILE"))..."
 		exit 3
 	fi
 	echo "$$" > "$PIDFILE"
@@ -59,7 +58,7 @@ while true; do
 
 	if (( $CONNECTED == 0 )); then
 		CNT=$(( $CNT + 1))
-		echo "$(date): $CONNECTED players connected ($CNT)"
+		echo "$(date): $CONNECTED players connected ($CNT/$CONSECUTIVE)"
 
 		if (( $CNT >= $CONSECUTIVE )); then
 			break

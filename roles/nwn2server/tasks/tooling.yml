@@ -4,3 +4,11 @@
     src: nwn2server-wait-empty.j2
     dest: "{{nwn2_path_root}}/bin/nwn2server-wait-empty"
     mode: 0755
+
+- name: Copy nwn-srv proxy script
+  copy:
+    dest: "{{nwn2_path_root}}/bin/nwn2server-query"
+    mode: 0755
+    content: |
+      #!/bin/bash
+      nwn-srv $@ {{nwn2server_private_ip}}
