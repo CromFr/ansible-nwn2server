@@ -3,7 +3,7 @@
 set -euo pipefail
 
 toBytes(){
-	echo $@ | awk \
+	echo "$@" | awk \
 	'BEGIN{IGNORECASE = 1}
 	function printpower(n,b,p) {printf "%u\n", n*b^p; next}
 	/[0-9]$/{print $1;next};
@@ -14,15 +14,15 @@ toBytes(){
 }
 
 # Get get huge page size
-PAGE_SIZE=$(toBytes $(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$"))
-REQUIRED_PAGES=$(($(toBytes {{qemu_memory}}) / $PAGE_SIZE))
+PAGE_SIZE=$(toBytes "$(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$")")
+REQUIRED_PAGES=$(( $(toBytes {{qemu_memory}}) / PAGE_SIZE ))
 
 AVAIL_PAGES=$(( $(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$") - $(grep "HugePages_Rsvd" /proc/meminfo | grep -oE "[0-9]+$") ))
-if (( $AVAIL_PAGES < $REQUIRED_PAGES )); then
+if (( AVAIL_PAGES < REQUIRED_PAGES )); then
 	CURR_PAGES=$(grep "HugePages_Total" /proc/meminfo | grep -oE "[0-9]+$")
-	NEW_ALLOC=$(($CURR_PAGES + ($REQUIRED_PAGES - $AVAIL_PAGES)))
+	NEW_ALLOC=$(( CURR_PAGES + (REQUIRED_PAGES - AVAIL_PAGES) ))
 	echo "Allocating $NEW_ALLOC huge memory pages"
-	echo $NEW_ALLOC > /proc/sys/vm/nr_hugepages
+	echo "$NEW_ALLOC" > /proc/sys/vm/nr_hugepages
 fi
 
 # Setup port forwarding to the VM
@@ -40,11 +40,11 @@ qemu-system-x86_64 \
 	\
 	-enable-kvm \
 	-cpu host \
-	-smp {{qemu_smp}} \
-	-m {{qemu_memory}} \
+	-smp "{{qemu_smp}}" \
+	-m "{{qemu_memory}}" \
 	-mem-path /dev/hugepages \
 	\
-	-drive file="{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}",format={{qemu_disk_format}},if=virtio,cache=none \
+	-drive "file='{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}',format={{qemu_disk_format}},if=virtio,cache=none" \
 	\
 	-netdev tap,id=tap0,ifname=tap0,script=no,downscript=no \
 	-device virtio-net-pci,netdev=tap0,mac=02:00:00:00:00:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
@@ -59,5 +59,5 @@ qemu-system-x86_64 \
 	-chardev spicevmc,id=vdagent,name=vdagent \
 	-device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
 	\
-	-monitor unix:{{nwn2_path_root}}/qemu-monitor.sock,server,nowait \
-	$@
+	-monitor "unix:{{nwn2_path_root}}/qemu-monitor.sock,server,nowait" \
+	"$@"

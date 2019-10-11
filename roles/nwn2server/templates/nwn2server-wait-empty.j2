@@ -56,11 +56,11 @@ CNT=0
 while true; do
 	CONNECTED=$(nwn-srv bnxi {{nwn2server_private_ip}} -f json | jq -r .currentPlayers)
 
-	if (( $CONNECTED == 0 )); then
-		CNT=$(( $CNT + 1))
+	if (( CONNECTED == 0 )); then
+		CNT=$(( CNT + 1))
 		echo "$(date): $CONNECTED players connected ($CNT/$CONSECUTIVE)"
 
-		if (( $CNT >= $CONSECUTIVE )); then
+		if (( CNT >= CONSECUTIVE )); then
 			break
 		fi
 	else
@@ -68,7 +68,7 @@ while true; do
 		echo "$(date): $CONNECTED players connected"
 	fi
 
-	sleep $PERIOD
+	sleep "$PERIOD"
 done
 
 if [[ "$PIDFILE" != "" ]]; then

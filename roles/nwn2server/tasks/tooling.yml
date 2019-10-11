@@ -11,4 +11,4 @@
     mode: 0755
     content: |
       #!/bin/bash
-      nwn-srv $@ {{nwn2server_private_ip}}
+      nwn-srv "$@" {{nwn2server_private_ip}}
