@@ -6,7 +6,7 @@
   file:
     path: "{{item}}"
     owner: "{{unprivileged_user}}"
-    group: "{{unprivileged_user}}"
+    group: "{{unprivileged_group}}"
     state: directory
   with_items:
     - "{{nwn2_path_root}}"

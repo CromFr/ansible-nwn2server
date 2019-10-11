@@ -23,14 +23,14 @@
 - name: Unprivileged group setup
   group:
     name: "{{unprivileged_user}}"
-    gid: "{{unprivileged_uid}}"
+    gid: "{{unprivileged_gid}}"
   tags: [base]
 
 - name: Unprivileged user setup
   user:
     name: "{{unprivileged_user}}"
     uid: "{{unprivileged_uid}}"
-    group: "{{unprivileged_user}}"
+    group: "{{unprivileged_group}}"
   tags: [base]
 
 - authorized_key:

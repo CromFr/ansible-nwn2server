@@ -5,6 +5,7 @@ windows_update: False
 
 # Host unprivileged user info
 unprivileged_uid: 1000
+unprivileged_gid: "{{unprivileged_uid}}"
 
 # Host nwn2server path for NFS mounting
 nwn2_path_root: /srv/nwn2server
