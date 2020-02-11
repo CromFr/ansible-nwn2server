@@ -30,7 +30,7 @@
 - name: Add MySQL User
   mysql_user:
     name: "{{mysql_user}}"
-    host: '10.0.2.%'
+    host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.%"
     password: "{{mysql_password}}"
     priv: "{{mysql_database}}.*:ALL"
     login_unix_socket: /var/run/mysqld/mysqld.sock
