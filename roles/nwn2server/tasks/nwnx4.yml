@@ -2,7 +2,7 @@
 - name: Download & unzip nwnx archive
   unarchive:
     remote_src: yes
-    src: 'http://nwnx.org/typo3conf/ext/nf_downloads/pi1/passdownload.php?downloaddata=13'
+    src: 'https://www.nwnx.org/fileadmin/download/nwnx4_109_preview1.zip'
     dest: /tmp
     creates: /tmp/nwnx4
 
