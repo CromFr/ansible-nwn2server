@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+
+function ssh-win(){
+    ssh -i "$(dirname "$0")/nwn2server-ssh-key" "{{windows_user}}@{{nwn2server_private_ip}}" "$@"
+}
+function count-process(){
+    (ssh-win tasklist | grep -cE "$1") || true
+}
+
+if [ "$1" == "start" ]; then
+    if (( $(count-process "nwnx4_gui|nwn2server.exe") > 0)); then
+        echo "NWN2Server is already running"
+        exit
+    fi
+    ssh-win psexec -nobanner -d -i 1 -s 'C:/Users/{{windows_user}}/Desktop/nwn2server-start.bat' || true
+
+    CNT=0
+    while (( $(count-process "nwn2server.exe|nwnx4_gui.exe") < 2 )); do
+        CNT=$((CNT + 1))
+        if (( CNT > 12 )); then
+            echo "Timeout while starting the server"
+            exit 1
+        fi
+        echo "nwnx4 + nwn2server are not yet started..."
+        sleep 5
+    done
+elif [ "$1" == "stop" ]; then
+    ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
+    CNT=0
+    while (( $(count-process "nwn2server.exe|nwnx4_gui.exe") > 0 )); do
+        CNT=$((CNT + 1))
+        if (( CNT > 60 )); then
+            echo "Timeout while stopping the server"
+            exit 1
+        fi
+        echo "nwnx4 + nwn2server are still running..."
+        sleep 10
+    done
+elif [ "$1" == "status" ]; then
+    if (( $(count-process "nwn2server.exe|nwnx4_gui.exe") > 0 )); then
+        echo "Running"
+    else
+        echo "Stopped"
+        exit 1
+    fi
+elif [ "$1" == "kill" ]; then
+    ssh-win taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe /F
+elif [ "$1" == "restart" ]; then
+    if (( $(count-process "nwnx4_gui.exe") > 0 )); then
+        ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe
+    else
+        exec "$0" start
+    fi
+elif [ "$1" == "cmd" ]; then
+    shift
+    ssh-win "$@"
+else
+    echo "Usage: $0 (start|stop|status|kill|restart|cmd)"
+    echo "  start   Launch the startup batch file. Do nothing if already running."
+    echo "  stop    Exit both NWNX4 and NWN2Server (Normal shutdown)"
+    echo "  status  Request if the server is running or stopped."
+    echo "  kill    Force kill both NWNX4 and NWN2Server (similar to kill -9)"
+    echo "  restart Exit only NWN2Server (Normal shutdown). The NWNX4 process watchdog will restart NWN2server."
+    echo "  cmd     Launch a windows command. Example: $0 cmd tasklist"
+    exit 1
+fi

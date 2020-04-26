@@ -43,11 +43,11 @@
     dest: "{{nwn2_path_root}}/bin/launch"
     mode: 0755
 
-- name: Copy controller script
-  template:
-    src: nwn2server-controller.j2
-    dest: "{{nwn2_path_root}}/bin/nwn2server-controller"
-    mode: 0755
+- import_tasks: qemu-ssh.yml
+  when: qemu_ssh_control
+
+- import_tasks: qemu-winrm.yml
+  when: qemu_ssh_control is false
 
 - name: Copy nwn2server service file
   template:

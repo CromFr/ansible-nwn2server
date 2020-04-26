@@ -1,0 +1,24 @@
+- name: Generate SSH key for controlling the VM
+  become: true
+  command: ssh-keygen -P "" -C vm-remote-control@{{ansible_hostname}} -t ed25519 -f {{nwn2_path_root}}/bin/nwn2server-ssh-key
+  args:
+    creates: "{{nwn2_path_root}}/bin/nwn2server-ssh-key"
+  register: keygen
+
+- name: Set SSH key permissions
+  file:
+    path: "{{nwn2_path_root}}/bin/nwn2server-ssh-key"
+    group: "{{unprivileged_group}}"
+    mode: "600"
+
+- name: Retrieve generated SSH public key nwn2server-ssh-key.pub
+  fetch:
+    src: "{{nwn2_path_root}}/bin/nwn2server-ssh-key.pub"
+    dest: "ssh-keys/"
+  when: keygen.changed
+
+- name: Copy controller script
+  template:
+    src: nwn2server-controller-ssh.j2
+    dest: "{{nwn2_path_root}}/bin/nwn2server-controller"
+    mode: 0755

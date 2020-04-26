@@ -8,6 +8,9 @@ unprivileged_gid: "{{unprivileged_uid}}"
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
 qemu_tap_network: "10.0.2.0"
 
+# true to control the Windows VM using SSH server instead of WinRM
+qemu_ssh_control: false
+
 # Base path where data will be stored. Must be a direct sub-folder of /srv
 # (see service files)
 nwn2_path_root: /srv/nwn2server

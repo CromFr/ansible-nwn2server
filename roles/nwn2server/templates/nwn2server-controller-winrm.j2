@@ -23,7 +23,7 @@ if [ "$1" == "start" ]; then
         echo "NWN2Server is already running"
         exit
     fi
-    winrm psexec -nobanner -d -i 1 -s C:/Users/Administrator/Desktop/nwn2server-start.bat || true
+    winrm psexec -nobanner -d -i 1 -s "C:/Users/{{windows_user}}/Desktop/nwn2server-start.bat" || true
 elif [ "$1" == "stop" ]; then
     winrm psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
     while (( $(winrm tasklist | grep -c nwn2server.exe) > 0 )); do
