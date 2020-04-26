@@ -6,10 +6,11 @@
       - python3-pymysql
       - python-pymysql
     state: latest
+  tags: [sql]
 
 - name: Set MySQL to listen on all interfaces
   lineinfile:
-    dest: /etc/mysql/mariadb.conf.d/50-server.cnf
+    dest: /etc/mysql/mariadb.cnf
     regexp: '^\s*bind-address\s*=\s*.+$'
     insertafter: '\[mysqld\]'
     line: 'bind-address = 0.0.0.0'
@@ -17,7 +18,7 @@
 
 - name: Start & enable MySQL service
   systemd:
-    name: mysql.service
+    name: mariadb.service
     state: "{{'restarted' if conf_changed.changed else 'started'}}"
     enabled: yes
 
@@ -26,13 +27,16 @@
     name: nwnx
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
+  tags: [sql]
 
 - name: Add MySQL User
   mysql_user:
     name: "{{mysql_user}}"
-    host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.%"
+    host: "{{item}}"
     password: "{{mysql_password}}"
     priv: "{{mysql_database}}.*:ALL"
     login_unix_socket: /var/run/mysqld/mysqld.sock
-
-
+  with_items:
+    - "{{qemu_tap_network.split('.')[0:3] | join('.')}}.%"
+    - "localhost"
+  tags: [sql]

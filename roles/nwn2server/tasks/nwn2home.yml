@@ -30,7 +30,7 @@
     path: "{{nwn2_path_root}}/home/override"
     src: tmpfs
     fstype: tmpfs
-    opts: nodev,nosuid,size={{nwn2server_override_maxsize}}
+    opts: defaults,uid=1000,gid=1000,dmask=022,fmask=133,size={{nwn2server_override_maxsize}}
     state: mounted
   register: override_tmpfs_setup
   when: nwn2server_override_tmpfs
