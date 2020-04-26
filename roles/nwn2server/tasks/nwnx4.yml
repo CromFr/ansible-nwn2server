@@ -1,36 +1,17 @@
 
-- name: Download & unzip nwnx archive
-  unarchive:
-    remote_src: yes
-    src: 'https://www.nwnx.org/fileadmin/download/nwnx4_109_preview1.zip'
-    dest: /tmp
-    creates: /tmp/nwnx4
-
-- name: Create nwnx4 folder
-  file:
-    path: "{{nwn2_path_root}}/nwnx4"
-    state: directory
-    owner: "{{unprivileged_user}}"
-
-- name: Check if nwnx4 files are present
-  stat:
-    path: /tmp/nwnx4
-  register: nwnx4_extracted
-
+# Note: At the moment, the nwnx4 files distributed on nwnx.org are broken
 - name: Install nwnx files
   copy:
-    remote_src: true
-    src: "{{item.path}}"
+    src: "{{role_path}}/files/nwnx4/{{item.path}}"
     dest: "{{nwn2_path_root}}/nwnx4/"
     mode: "{{item.mode}}"
   with_items:
-    - {path: /tmp/nwnx4/NWNX4_Controller.exe, mode: 755}
-    - {path: /tmp/nwnx4/NWNX4_GUI.exe, mode: 755}
-    - {path: /tmp/nwnx4/NWNX4_Hook.dll, mode: 755}
-    - {path: /tmp/nwnx4/xp_mysql.dll, mode: 755}
-    - {path: /tmp/nwnx4/xp_time.dll, mode: 755}
-    - {path: /tmp/nwnx4/licence.txt, mode: 644}
-  when: nwnx4_extracted.stat.exists
+    - {path: NWNX4_Controller.exe, mode: 755}
+    - {path: NWNX4_GUI.exe, mode: 755}
+    - {path: NWNX4_Hook.dll, mode: 755}
+    - {path: xp_mysql.dll, mode: 755}
+    - {path: xp_time.dll, mode: 755}
+    - {path: licence.txt, mode: 644}
 
 - name: Install nwnx4 config files
   template:
