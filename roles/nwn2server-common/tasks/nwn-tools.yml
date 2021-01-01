@@ -1,14 +1,7 @@
 
-
 - name: Install nwn-lib-d tools
-  get_url:
-    url: "{{item.url}}"
-    dest: "/usr/local/bin/{{item.name}}"
+  unarchive:
+    src: https://github.com/CromFr/nwn-lib-d/releases/latest/download/nwn-lib-d-tools-linux-x86_64.tar.xz
+    dest: /usr/local/bin
     mode: 0755
-  with_items:
-  - {name: "nwn-gff", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-gff.linux-x86_64"}
-  - {name: "nwn-erf", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-erf.linux-x86_64"}
-  - {name: "nwn-tlk", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-tlk.linux-x86_64"}
-  - {name: "nwn-bdb", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-bdb.linux-x86_64"}
-  - {name: "nwn-trn", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-trn.linux-x86_64"}
-  - {name: "nwn-srv", url: "https://cromfr.github.io/nwn-lib-d/bin/nwn-srv.linux-x86_64"}
+    remote_src: yes
