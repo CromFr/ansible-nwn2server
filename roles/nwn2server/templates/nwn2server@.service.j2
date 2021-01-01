@@ -3,6 +3,7 @@ Description=NWN2 server on a windows virtual machine
 After=network.target
 
 [Service]
+ExecStartPre=/bin/sleep 5
 ExecStart=/srv/%i/bin/launch -pidfile /srv/%i/nwn2server.pid
 WorkingDirectory=/srv/%i
 
