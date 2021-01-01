@@ -6,7 +6,7 @@ function ssh-win(){
     ssh -i "$(dirname "$0")/nwn2server-ssh-key" "{{windows_user}}@{{nwn2server_private_ip}}" "$@"
 }
 function count-process(){
-    (ssh-win tasklist | grep -cE "$1") || true
+    (ssh-win tasklist | grep -ciE "$1") || true
 }
 
 if [ "$1" == "start" ]; then
@@ -23,20 +23,31 @@ if [ "$1" == "start" ]; then
             echo "Timeout while starting the server"
             exit 1
         fi
-        echo "nwnx4 + nwn2server are not yet started..."
+        echo "nwnx4 and nwn2server are not yet started..."
         sleep 5
     done
+    echo "nwnx4 and nwn2server are running !"
 elif [ "$1" == "stop" ]; then
-    ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
     CNT=0
     while (( $(count-process "nwn2server.exe|nwnx4_gui.exe") > 0 )); do
+        if (( CNT == 0 )); then
+            ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
+        fi
         CNT=$((CNT + 1))
-        if (( CNT > 60 )); then
-            echo "Timeout while stopping the server"
+        if (( CNT > 12 )); then
+            echo "Killing process"
+            ssh-win psexec -nobanner -i 1 -s taskkill /F /IM nwn2server.exe || true
+            ssh-win psexec -nobanner -i 1 -s taskkill /F /IM NWNX4_GUI.exe || true
+            sleep 2
+            if (( $(count-process "nwnx4_gui.exe|nwn2server.exe") == 0 )); then
+                echo "Server has been killed"
+                exit 0
+            fi
+            echo "Could not stop the server"
             exit 1
         fi
-        echo "nwnx4 + nwn2server are still running..."
-        sleep 10
+        echo "nwnx4 or nwn2server are still running..."
+        sleep 5
     done
 elif [ "$1" == "status" ]; then
     if (( $(count-process "nwn2server.exe|nwnx4_gui.exe") > 0 )); then
