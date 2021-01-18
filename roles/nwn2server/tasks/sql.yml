@@ -9,11 +9,11 @@
   tags: [sql]
 
 - name: Set MySQL to listen on all interfaces
-  lineinfile:
-    dest: /etc/mysql/mariadb.cnf
-    regexp: '^\s*bind-address\s*=\s*.+$'
-    insertafter: '\[mysqld\]'
-    line: 'bind-address = 0.0.0.0'
+  community.general.ini_file:
+    path: /etc/mysql/mariadb.cnf
+    section: mysqld
+    option: bind-address
+    value: '0.0.0.0'
   register: conf_changed
 
 - name: Start & enable MySQL service
@@ -22,9 +22,9 @@
     state: "{{'restarted' if conf_changed.changed else 'started'}}"
     enabled: yes
 
-- name: Add nwnx database
+- name: Add {{mysql_database}} database
   mysql_db:
-    name: nwnx
+    name: "{{mysql_database}}"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
   tags: [sql]

@@ -24,7 +24,6 @@
 
 - name: Download Qemu compressed disk from URL
   get_url:
-    remote_src: "{{qemu_disk_download_url | urlsplit('scheme') != ''}}"
     url: "{{qemu_disk_download_url}}"
     dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
   when:
