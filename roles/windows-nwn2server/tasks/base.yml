@@ -56,6 +56,7 @@
     - sysinternals
     - vcredist2005
     - vcredist2010
+    - vcredist2013 #Needed for AuroraServerNWScript
     - dotnet4.0 #Needed for AuroraServerNWScript
     - dotnet4.5 #Needed for CLR scripts
     - dotnet4.7 #Needed xp_bugfix TLS support
