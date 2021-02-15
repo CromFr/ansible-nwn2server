@@ -124,6 +124,13 @@
     type: dword
     data: "1"
 
+- name: "Make Windows use BIOS time as UTC time"
+  win_regedit:
+    path: 'HKLM:\System\CurrentControlSet\Control\TimeZoneInformation'
+    name: RealTimeIsUniversal
+    type: dword
+    data: "1"
+
 - name: Wallpaper color
   win_regedit:
     path: 'HKCU:\Control Panel\Colors'
