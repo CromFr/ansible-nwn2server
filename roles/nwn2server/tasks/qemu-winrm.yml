@@ -2,4 +2,4 @@
   template:
     src: nwn2server-controller-winrm.j2
     dest: "{{nwn2_path_root}}/bin/nwn2server-controller"
-    mode: 0755
+    mode: 0700

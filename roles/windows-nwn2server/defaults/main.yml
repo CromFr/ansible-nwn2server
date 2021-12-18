@@ -18,3 +18,4 @@ nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
 nwn2server_gamefiles_downloadurl: ""
 
 qemu_tap_network: "10.0.2.0"
+qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"

@@ -47,7 +47,7 @@ qemu-system-x86_64 \
 	-drive "file={{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}},format={{qemu_disk_format}},if=virtio,cache=none" \
 	\
 	-netdev tap,id=tap0,ifname=tap0,script=no,downscript=no \
-	-device virtio-net-pci,netdev=tap0,mac=02:00:00:00:00:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
+	-device virtio-net-pci,netdev=tap0,mac=52:55:00:d1:55:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}} \
 	\
 	-device piix3-usb-uhci \
 	-device pvpanic \

@@ -1,4 +1,4 @@
-mount \\{{qemu_tap_network.split('.')[0:3] | join('.')}}.1{{nwn2_path_root}} Z:
+mount \\{{qemu_tap_network_host}}{{nwn2_path_root}} Z:
 timeout 5
 
 Z:

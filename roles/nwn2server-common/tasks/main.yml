@@ -4,9 +4,9 @@
     repo: deb http://archive.ubuntu.com/ubuntu {{item}} universe multiverse
     state: present
   with_items:
-    - bionic
-    - bionic-security
-    - bionic-updates
+    - "{{ansible_distribution_release}}"
+    - "{{ansible_distribution_release}}-security"
+    - "{{ansible_distribution_release}}-updates"
 
 - name: Packages install
   apt:

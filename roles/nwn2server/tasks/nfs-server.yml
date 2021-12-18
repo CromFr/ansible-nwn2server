@@ -20,8 +20,10 @@
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK: mounts for {{nwn2_path_root}}"
     block: |
-      "{{nwn2_path_root}}"               {{nwn2server_private_ip}}(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_gid}},no_subtree_check,crossmnt)
+      "{{nwn2_path_root}}"               {{nwn2server_private_ip}}(fsid=0,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_gid}},no_subtree_check,crossmnt,async)
+      {% if nwn2server_override_tmpfs %}
       "{{nwn2_path_root}}/home/override" {{nwn2server_private_ip}}(fsid=1,insecure,rw,all_squash,anonuid={{unprivileged_uid}},anongid={{unprivileged_gid}},no_subtree_check)
+      {% endif %}
   register: nfsexport
 
 - name: Update exports

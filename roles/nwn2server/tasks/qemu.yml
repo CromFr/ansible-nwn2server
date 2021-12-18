@@ -71,7 +71,7 @@
     path: /etc/dnsmasq.d/qemu-tap0
     marker: "# {mark} ANSIBLE MANAGED BLOCK: static IP for {{nwn2_path_root}}"
     block: |
-      dhcp-host=02:00:00:00:00:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}},{{nwn2server_private_ip}}
+      dhcp-host=52:55:00:d1:55:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}},{{nwn2server_private_ip}}
   register: dnsmasq_conf
 
 - name: Reload dnsmasq server

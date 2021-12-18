@@ -7,6 +7,7 @@ unprivileged_gid: "{{unprivileged_uid}}"
 
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
 qemu_tap_network: "10.0.2.0"
+qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
 
 # true to control the Windows VM using SSH server instead of WinRM
 qemu_ssh_control: false
@@ -29,6 +30,7 @@ nwn2server_name: "NWN2 server managed with Ansible"
 nwn2server_playerpassword: ""
 nwn2server_dmpassword: ""
 nwn2server_port: 5121
+nwn2server_gametype: 9
 
 # If true, the NWN2 override folder will be loaded into RAM for improving
 # server performance. The module files should be stored in the override folder
@@ -62,7 +64,7 @@ qemu_memory: "2.5G"
 qemu_spice_port: 3389
 
 # MySQL host address in the tap0 network. should not be changed.
-mysql_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
+mysql_host: "{{qemu_tap_network_host}}"
 mysql_database: "nwnx"
 mysql_user: "nwnx"
 mysql_password: "password"

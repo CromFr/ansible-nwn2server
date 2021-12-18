@@ -4,7 +4,6 @@
       - mariadb-server
       - mariadb-client
       - python3-pymysql
-      - python-pymysql
     state: latest
   tags: [sql]
 
