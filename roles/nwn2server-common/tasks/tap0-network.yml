@@ -22,7 +22,7 @@
       Name=tap0
 
       [Link]
-      MACAddress=52:55:00:d1:55:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}}
+      MACAddress=52:55:00:d1:55:{{"%02x" | format(qemu_tap_network_host.split(".")[3] | int)}}
       RequiredForOnline=no
 
       [Network]

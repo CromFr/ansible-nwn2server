@@ -14,10 +14,10 @@
   register: chk_qemudisk
   changed_when: False
 
-- name: Upload Qemu compressed disk
-  copy:
-    src: "{{qemu_disk_download_url}}"
-    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | splitext)[1]}}"
+- name: Extract Qemu compressed disk from target disk
+  shell: xz -d -T0 --stdout "{{qemu_disk_download_url}}" > "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+  args:
+    creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
   when:
     - chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') == ''
@@ -31,9 +31,12 @@
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
 - name: Extract Qemu disk
-  command: xz -d {{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}
+  command: xz -d -T0 "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
   args:
     creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+  when:
+    - chk_qemudisk is failed
+    - qemu_disk_download_url | urlsplit('scheme') != ''
 
 
 - name: Copy nwn2server launch script

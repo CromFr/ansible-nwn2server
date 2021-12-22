@@ -40,8 +40,11 @@ nwn2server_override_tmpfs: true
 # Maximum size of the override folder
 nwn2server_override_maxsize: 2G
 
+# You can override this in order to freeze nwnx4 version
+nwnx4_upstream: "https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
+
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
-nwnx4_mysql_loglevel: "1"
+nwnx4_mysql_loglevel: "2"
 # Change this path to set a custom dir to provision nwnx4 additional plugins & configuration (that can be versionned)
 nwnx4_additional_plugin_path: "{{playbook_dir}}/staging/nwnx4_plugins"
 

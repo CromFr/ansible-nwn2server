@@ -1,17 +1,20 @@
 
-# Note: At the moment, the nwnx4 files distributed on nwnx.org are broken
-- name: Install nwnx files
-  copy:
-    src: "{{role_path}}/files/nwnx4/{{item.path}}"
-    dest: "{{nwn2_path_root}}/nwnx4/"
-    mode: "{{item.mode}}"
-  with_items:
-    - {path: NWNX4_Controller.exe, mode: 755}
-    - {path: NWNX4_GUI.exe, mode: 755}
-    - {path: NWNX4_Hook.dll, mode: 755}
-    - {path: xp_mysql.dll, mode: 755}
-    - {path: xp_time.dll, mode: 755}
-    - {path: licence.txt, mode: 644}
+- name: Create dir for storing nwnx4 zip file
+  file:
+    path: "/var/ansible-nwn2server/"
+    state: directory
+
+- name: Download latest nwnx4 release
+  get_url:
+    url: "{{nwnx4_upstream}}"
+    dest: /var/ansible-nwn2server/nwnx4.zip
+  register: nfsexport_rmlegacy
+
+- name: extract NWNX4
+  unarchive:
+    src: "{{nwnx4_upstream}}"
+    dest: "{{nwn2_path_root}}/"
+    remote_src: yes
 
 - name: Install nwnx4 config files
   template:
@@ -22,20 +25,28 @@
     - nwnx.ini.j2
     - xp_mysql.ini.j2
 
-- name: Install additional nwnx4 plugins (ini and dll files only)
+- name: Install additional nwnx4 plugin dll files
+  copy:
+    src: "{{item}}"
+    dest: "{{nwn2_path_root}}/nwnx4/plugins/"
+    mode: "0755"
+  with_fileglob:
+    - "{{nwnx4_additional_plugin_path}}/*.dll"
+    - "{{nwnx4_additional_plugin_path}}/*.pdb"
+
+- name: Install additional nwnx4 ini files
   copy:
     src: "{{item}}"
     dest: "{{nwn2_path_root}}/nwnx4"
-    mode: "{{((item | splitext)[1] == '.dll') | ternary(0755, 0644)}}"
+    mode: "0644"
   with_fileglob:
     - "{{nwnx4_additional_plugin_path}}/*.ini"
-    - "{{nwnx4_additional_plugin_path}}/*.dll"
 
 - name: Install additional nwnx4 config templates
   template:
     src: "{{item}}"
     dest: "{{nwn2_path_root}}/nwnx4/{{(item | basename | splitext)[0]}}"
-    mode: 0644
+    mode: "0644"
   with_fileglob:
     - "{{nwnx4_additional_plugin_path}}/*.j2"
 
