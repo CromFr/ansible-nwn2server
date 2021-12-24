@@ -2,11 +2,27 @@
 
 set -e
 
-function ssh-win(){
-    ssh -i "$(dirname "$0")/nwn2server-ssh-key" "{{windows_user}}@{{nwn2server_private_ip}}" "$@"
+function remote-cmd(){
+    {% if qemu_ssh_control %}
+    ssh -i "$(dirname "$0")/nwn2server-ssh-key" -o "StrictHostKeyChecking accept-new" "{{windows_user}}@{{nwn2server_private_ip}}" "$@"
+    {% else %}
+    python3 -c "
+import winrm
+import sys
+
+session = winrm.Session('{{nwn2server_private_ip}}:5985', auth=('{{windows_user}}','{{windows_password}}'))
+result = session.run_cmd(sys.argv[1], sys.argv[2:])
+
+print('\x1b[31m' + result.std_err.decode('cp437', errors='ignore') + '\x1b[0m')
+print(result.std_out.decode('cp437', errors='ignore'))
+
+sys.exit(result.status_code)
+" "$@"
+    {% endif %}
 }
+
 function count-process(){
-    (ssh-win tasklist | grep -ciE "$1") || true
+    (remote-cmd tasklist | grep -ciE "$1") || true
 }
 
 if [ "$1" == "start" ]; then
@@ -14,7 +30,7 @@ if [ "$1" == "start" ]; then
         echo "NWN2Server is already running"
         exit
     fi
-    ssh-win psexec -nobanner -d -i 1 -s 'C:/Users/{{windows_user}}/Desktop/nwn2server-start.bat' || true
+    remote-cmd psexec -nobanner -d -i 1 -s 'C:/Users/{{windows_user}}/Desktop/nwn2server-start.bat' || true
 
     CNT=0
     while (( $(count-process "nwn2server.exe|nwnx4_gui.exe") < 2 )); do
@@ -31,13 +47,13 @@ elif [ "$1" == "stop" ]; then
     CNT=0
     while (( $(count-process "nwn2server.exe|nwnx4_gui.exe") > 0 )); do
         if (( CNT == 0 )); then
-            ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
+            remote-cmd psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe
         fi
         CNT=$((CNT + 1))
         if (( CNT > 12 )); then
             echo "Killing process"
-            ssh-win psexec -nobanner -i 1 -s taskkill /F /IM nwn2server.exe || true
-            ssh-win psexec -nobanner -i 1 -s taskkill /F /IM NWNX4_GUI.exe || true
+            remote-cmd psexec -nobanner -i 1 -s taskkill /F /IM nwn2server.exe || true
+            remote-cmd psexec -nobanner -i 1 -s taskkill /F /IM NWNX4_GUI.exe || true
             sleep 2
             if (( $(count-process "nwnx4_gui.exe|nwn2server.exe") == 0 )); then
                 echo "Server has been killed"
@@ -57,16 +73,16 @@ elif [ "$1" == "status" ]; then
         exit 1
     fi
 elif [ "$1" == "kill" ]; then
-    ssh-win taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe /F
+    remote-cmd taskkill /IM nwn2server.exe /IM NWNX4_GUI.exe /F
 elif [ "$1" == "restart" ]; then
     if (( $(count-process "nwnx4_gui.exe") > 0 )); then
-        ssh-win psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe
+        remote-cmd psexec -nobanner -i 1 -s taskkill /IM nwn2server.exe
     else
         exec "$0" start
     fi
 elif [ "$1" == "cmd" ]; then
     shift
-    ssh-win "$@"
+    remote-cmd "$@"
 else
     echo "Usage: $0 (start|stop|status|kill|restart|cmd)"
     echo "  start   Launch the startup batch file. Do nothing if already running."

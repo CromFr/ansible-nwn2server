@@ -15,7 +15,7 @@ toBytes(){
 
 # Get get huge page size
 PAGE_SIZE=$(toBytes "$(grep Hugepagesize /proc/meminfo | grep -oE "[0-9\.]+\s*[kmgt]B$")")
-REQUIRED_PAGES=$(( $(toBytes {{qemu_memory}}) / PAGE_SIZE ))
+REQUIRED_PAGES=$(( ($(toBytes {{qemu_memory}}) + PAGE_SIZE / 2) / PAGE_SIZE ))
 
 AVAIL_PAGES=$(( $(grep "HugePages_Free" /proc/meminfo | grep -oE "[0-9]+$") - $(grep "HugePages_Rsvd" /proc/meminfo | grep -oE "[0-9]+$") ))
 if (( AVAIL_PAGES < REQUIRED_PAGES )); then
