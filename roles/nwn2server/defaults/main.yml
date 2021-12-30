@@ -10,6 +10,7 @@ qemu_tap_network: "10.0.2.0"
 qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
 
 # true to control the Windows VM using SSH server instead of WinRM
+# Note: setting this to true requires you to manually install a ssh server on the windows VM
 qemu_ssh_control: false
 
 # Base path where data will be stored. Must be a direct sub-folder of /srv
