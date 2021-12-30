@@ -1,3 +1,18 @@
+
+
+
+- name: Register mariadb apt key
+  apt_key:
+    url: https://mariadb.org/mariadb_release_signing_key.asc
+  tags: [sql]
+
+- name: Add mariadb ppa key
+  apt_repository:
+    repo: deb [arch=amd64] {{mariadb_mirror}}/{{mariadb_version}}/ubuntu {{ansible_distribution_release}} main
+    filename: mariadb
+    state: present
+  tags: [sql]
+
 - name: Install MySQL package
   apt:
     name:
@@ -9,17 +24,19 @@
 
 - name: Set MySQL to listen on all interfaces
   community.general.ini_file:
-    path: /etc/mysql/mariadb.cnf
+    path: /etc/mysql/mariadb.conf.d/99-nwn2server.cnf
     section: mysqld
     option: bind-address
-    value: '0.0.0.0'
+    value: '0.0.0.0' # Note: the UFW will filter connections
   register: conf_changed
+  tags: [sql]
 
 - name: Start & enable MySQL service
   systemd:
     name: mariadb.service
     state: "{{'restarted' if conf_changed.changed else 'started'}}"
     enabled: yes
+  tags: [sql]
 
 - name: Add {{mysql_database}} database
   mysql_db:

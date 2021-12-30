@@ -67,6 +67,8 @@ qemu_memory: "2.5G"
 qemu_spice_port: 3389
 
 # MySQL host address in the tap0 network. should not be changed.
+mariadb_mirror: "https://ftp.igh.cnrs.fr/pub/mariadb/repo"
+mariadb_version: "10.6"
 mysql_host: "{{qemu_tap_network_host}}"
 mysql_database: "nwnx"
 mysql_user: "nwnx"
