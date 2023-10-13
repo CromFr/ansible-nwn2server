@@ -55,4 +55,5 @@
   with_items:
     - "{{qemu_tap_network.split('.')[0:3] | join('.')}}.%"
     - "localhost"
+    - "127.0.0.1"
   tags: [sql]
