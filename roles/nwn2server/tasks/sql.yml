@@ -3,10 +3,10 @@
 
 - name: Register mariadb apt key
   apt_key:
-    url: https://mariadb.org/mariadb_release_signing_key.asc
+    url: https://mariadb.org/mariadb_release_signing_key.pgp
   tags: [sql]
 
-- name: Add mariadb ppa key
+- name: Add mariadb ppa
   apt_repository:
     repo: deb [arch=amd64] {{mariadb_mirror}}/{{mariadb_version}}/ubuntu {{ansible_distribution_release}} main
     filename: mariadb

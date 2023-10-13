@@ -4,6 +4,11 @@
     path: "/var/ansible-nwn2server/"
     state: directory
 
+- name: Create nwnx4 user config dir
+  file:
+    path: "{{nwn2_path_root}}/nwnx4-user/"
+    state: directory
+
 - name: Download latest nwnx4 release
   get_url:
     url: "{{nwnx4_upstream}}"
@@ -12,14 +17,14 @@
 
 - name: extract NWNX4
   unarchive:
-    src: "{{nwnx4_upstream}}"
-    dest: "{{nwn2_path_root}}/"
+    src: "/var/ansible-nwn2server/nwnx4.zip"
+    dest: "{{nwn2_path_root}}"
     remote_src: yes
 
 - name: Install nwnx4 config files
   template:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4/{{(item | basename | splitext)[0]}}"
+    dest: "{{nwn2_path_root}}/nwnx4-user/{{(item | basename | splitext)[0]}}"
     mode: 0644
   with_items:
     - nwnx.ini.j2
@@ -28,7 +33,7 @@
 - name: Install additional nwnx4 plugin dll files
   copy:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4/plugins/"
+    dest: "{{nwn2_path_root}}/nwnx4-user/plugins/"
     mode: "0755"
   with_fileglob:
     - "{{nwnx4_additional_plugin_path}}/*.dll"
@@ -37,7 +42,7 @@
 - name: Install additional nwnx4 ini files
   copy:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4"
+    dest: "{{nwn2_path_root}}/nwnx4-user"
     mode: "0644"
   with_fileglob:
     - "{{nwnx4_additional_plugin_path}}/*.ini"
@@ -45,7 +50,7 @@
 - name: Install additional nwnx4 config templates
   template:
     src: "{{item}}"
-    dest: "{{nwn2_path_root}}/nwnx4/{{(item | basename | splitext)[0]}}"
+    dest: "{{nwn2_path_root}}/nwnx4-user/{{(item | basename | splitext)[0]}}"
     mode: "0644"
   with_fileglob:
     - "{{nwnx4_additional_plugin_path}}/*.j2"
