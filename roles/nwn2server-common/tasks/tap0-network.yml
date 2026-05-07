@@ -1,49 +1,51 @@
-
+---
 
 - name: Qemu network packages install
-  apt:
+  ansible.builtin.apt:
     name:
       - dnsmasq
 
 - name: Create TAP device
-  copy:
+  ansible.builtin.copy:
     dest: /etc/systemd/network/tap0.netdev
     content: |
       [NetDev]
       Name=tap0
       Kind=tap
-  register: tap0_netdev
+    mode: "0644"
+  register: _nwn2server_tap0_netdev
 
 - name: Set TAP address
-  copy:
+  ansible.builtin.copy:
     dest: /etc/systemd/network/tap0.network
     content: |
       [Match]
       Name=tap0
 
       [Link]
-      MACAddress=52:55:00:d1:55:{{"%02x" | format(qemu_tap_network_host.split(".")[3] | int)}}
+      MACAddress=52:55:00:d1:55:{{ "%02x" | format(qemu_tap_network_host.split(".")[3] | int) }}
       RequiredForOnline=no
 
       [Network]
       Description=QEMU dedicated network
-      Address={{qemu_tap_network_host}}/24
+      Address={{ qemu_tap_network_host }}/24
       LinkLocalAddressing=ipv4
       IPForward=ipv4
       IPMasquerade=yes
       ConfigureWithoutCarrier=yes
       IgnoreCarrierLoss=yes
+    mode: "0644"
   register: tap0_network
 
 - name: Reload network config
-  systemd:
+  ansible.builtin.systemd_service:
     name: "systemd-networkd.service"
     state: restarted
-  when: tap0_netdev.changed or tap0_network.changed
+  when: _nwn2server_tap0_netdev.changed or tap0_network.changed
 
 # TODO: Find a more elegant way to configure tap0
-- name: Setup service for configuring tap0 interface &  routing
-  copy:
+- name: Setup service for configuring tap0 interface & routing
+  ansible.builtin.copy:
     dest: /etc/systemd/system/tap0-configure.service
     content: |
       [Unit]
@@ -54,51 +56,53 @@
       [Service]
       Type=oneshot
       RemainAfterExit=yes
-      ExecStartPre=-/sbin/ip addr add {{qemu_tap_network_host}}/24 dev tap0
+      ExecStartPre=-/sbin/ip addr add {{ qemu_tap_network_host }}/24 dev tap0
       ExecStartPre=/bin/bash -c " \
-        (iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE \
-          || iptables -t nat -A POSTROUTING -o {{ansible_default_ipv4.interface}} -j MASQUERADE) \
+        (iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE \
+        || iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE) \
         && \
-        (iptables -C FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT \
-          || iptables -A FORWARD -i tap0 -o {{ansible_default_ipv4.interface}} -j ACCEPT) \
+        (iptables -C FORWARD -i tap0 -o {{ ansible_default_ipv4.interface }} -j ACCEPT \
+          || iptables -A FORWARD -i tap0 -o {{ ansible_default_ipv4.interface }} -j ACCEPT) \
         "
       ExecStart=/sbin/ip link set tap0 up
 
       [Install]
       RequiredBy=multi-user.target
+    mode: "0644"
 
 - name: Enable & start tap0 set ip service
-  systemd:
+  ansible.builtin.systemd_service:
     name: "tap0-configure.service"
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Configure dnsmasq for DNS + DHCP
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/dnsmasq.d/qemu-tap0
-    create: yes
+    create: true
     marker: "# {mark} ANSIBLE MANAGED BLOCK: tap0 DNS server"
     block: |
       interface=tap0
       except-interface=lo
-      listen-address={{qemu_tap_network_host}}
+      listen-address={{ qemu_tap_network_host }}
       bind-interfaces
       cache-size=1000
 
-      dhcp-option=6,{{qemu_tap_network_host}} # DNS server
-      dhcp-range={{qemu_tap_network.split('.')[0:3] | join('.')}}.100,{{qemu_tap_network.split('.')[0:3] | join('.')}}.200,255.255.255.0
+      dhcp-option=6,{{ qemu_tap_network_host }} # DNS server
+      dhcp-range={{ qemu_tap_network_prefix24 }}.100,{{ qemu_tap_network_prefix24 }}.200,255.255.255.0
       dhcp-authoritative
+    mode: "0644"
 
 - name: Enable & start dnsmasq
-  systemd:
+  ansible.builtin.systemd_service:
     name: "dnsmasq.service"
     state: started
-    enabled: yes
+    enabled: true
 
 # TODO: Would be better to have a more restricted access to the host.
 #       This is the quick & easy solution for letting NFS packets through.
 - name: "UFW: configure firewall for tap0"
-  ufw:
+  community.general.ufw:
     rule: allow
     interface: tap0
     direction: in

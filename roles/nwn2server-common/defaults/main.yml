@@ -1,12 +1,12 @@
-
+---
 
 unprivileged_user: nwn2
 unprivileged_uid: 1000
-unprivileged_group: "{{unprivileged_user}}"
-unprivileged_gid: "{{unprivileged_uid}}"
+unprivileged_group: "{{ unprivileged_user }}"
+unprivileged_gid: "{{ unprivileged_uid }}"
 
-install_nwnlibd_tools: True
+install_nwnlibd_tools: true
 
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
-qemu_tap_network: "10.0.2.0"
-qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
+qemu_tap_network_prefix24: "10.0.2"
+qemu_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"

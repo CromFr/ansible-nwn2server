@@ -1,7 +1,7 @@
-
+---
 
 - name: Qemu Packages install
-  apt:
+  ansible.builtin.apt:
     name:
       - qemu-kvm
       - qemu-utils
@@ -9,97 +9,93 @@
       - python3-winrm
 
 - name: Check if qemu disk is present
-  command: ls "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
-  ignore_errors: yes
-  register: chk_qemudisk
-  changed_when: False
+  ansible.builtin.command: ls "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
+  ignore_errors: true
+  register: _nwn2server_chk_qemudisk
+  changed_when: false
 
 - name: Extract Qemu compressed disk from target disk
-  shell: xz -d -T0 --stdout "{{qemu_disk_download_url}}" > "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+  ansible.builtin.shell: xz -d -T0 --stdout "{{ qemu_disk_download_url }}" > "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   args:
-    creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+    creates: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   when:
-    - chk_qemudisk is failed
+    - _nwn2server_chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') == ''
 
 - name: Download Qemu compressed disk from URL
-  get_url:
-    url: "{{qemu_disk_download_url}}"
-    dest: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
+  ansible.builtin.get_url:
+    url: "{{ qemu_disk_download_url }}"
+    dest: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}{{ (qemu_disk_download_url | urlsplit('path') | splitext)[1] }}"
+    mode: "0600"
   when:
-    - chk_qemudisk is failed
+    - _nwn2server_chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
 - name: Extract Qemu disk
-  command: xz -d -T0 "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}{{(qemu_disk_download_url | urlsplit('path') | splitext)[1]}}"
+  ansible.builtin.command:
+    xz -d -T0 "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}{{ (qemu_disk_download_url | urlsplit('path') | splitext)[1] }}"
   args:
-    creates: "{{nwn2_path_root}}/nwn2server-vmdisk.{{qemu_disk_format}}"
+    creates: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   when:
-    - chk_qemudisk is failed
+    - _nwn2server_chk_qemudisk is failed
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
 
 - name: Copy nwn2server launch script
-  template:
+  ansible.builtin.template:
     src: qemu-launch.j2
-    dest: "{{nwn2_path_root}}/bin/launch"
-    mode: 0755
+    dest: "{{ nwn2_path_root }}/bin/launch"
+    mode: "0755"
 
 - name: Generate SSH key for controlling the VM
   become: true
-  command: ssh-keygen -P "" -C vm-remote-control@{{ansible_hostname}} -t ed25519 -f {{nwn2_path_root}}/bin/nwn2server-ssh-key
+  ansible.builtin.command: ssh-keygen -P "" -C vm-remote-control@{{ ansible_hostname }} -t ed25519 -f {{ nwn2_path_root }}/bin/nwn2server-ssh-key
   args:
-    creates: "{{nwn2_path_root}}/bin/nwn2server-ssh-key"
-  register: keygen
-  when: qemu_ssh_control
+    creates: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
+  register: _nwn2server_ssh_keygen
+  when: nwn2server_qemu_ssh_control
 
 - name: Set SSH key permissions
-  file:
-    path: "{{nwn2_path_root}}/bin/nwn2server-ssh-key"
-    group: "{{unprivileged_group}}"
-    mode: "600"
-  when: qemu_ssh_control
+  ansible.builtin.file:
+    path: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
+    group: "{{ unprivileged_group }}"
+    mode: "0600"
+  when: nwn2server_qemu_ssh_control
 
 - name: Retrieve generated SSH public key nwn2server-ssh-key.pub
-  fetch:
-    src: "{{nwn2_path_root}}/bin/nwn2server-ssh-key.pub"
+  ansible.builtin.fetch:
+    src: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key.pub"
     dest: "ssh-keys/"
-  when: keygen.changed and qemu_ssh_control
+  when: _nwn2server_ssh_keygen.changed and nwn2server_qemu_ssh_control
 
 - name: Copy controller script
-  template:
+  ansible.builtin.template:
     src: nwn2server-controller.j2
-    dest: "{{nwn2_path_root}}/bin/nwn2server-controller"
-    mode: 0755
+    dest: "{{ nwn2_path_root }}/bin/nwn2server-controller"
+    mode: "0755"
 
 - name: Copy nwn2server service file
-  template:
+  ansible.builtin.template:
     src: nwn2server@.service.j2
     dest: /etc/systemd/system/nwn2server@.service
-    mode: 0644
+    mode: "0644"
 
 - name: Enable & start nwn2server
-  systemd:
-    name: "nwn2server@{{nwn2_path_root | basename}}.service"
+  ansible.builtin.systemd_service:
+    name: "nwn2server@{{ nwn2_path_root | basename }}.service"
     state: started
-    enabled: yes
+    enabled: true
 
 - name: "UFW: Enable NWN2Server port"
-  ufw:
+  community.general.ufw:
     rule: allow
-    port: "{{nwn2server_public_port | string}}"
+    port: "{{ nwn2server_public_port | string }}"
     proto: udp
 
 - name: Configure static IP for the VM
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/dnsmasq.d/qemu-tap0
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: static IP for {{nwn2_path_root}}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: static IP for {{ nwn2_path_root }}"
     block: |
-      dhcp-host=52:55:00:d1:55:{{"%02x" | format(nwn2server_private_ip.split(".")[3] | int)}},{{nwn2server_private_ip}}
-  register: dnsmasq_conf
-
-- name: Reload dnsmasq server
-  systemd:
-    name: "dnsmasq.service"
-    state: restarted
-  when: dnsmasq_conf.changed
+      dhcp-host=52:55:00:d1:55:{{ "%02x" | format(nwn2server_private_ip.split(".")[3] | int) }},{{ nwn2server_private_ip }}
+  notify: Restart dnsmasq

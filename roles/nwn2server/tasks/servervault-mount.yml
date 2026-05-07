@@ -1,27 +1,24 @@
+---
 
 - name: Install NTFS package
-  apt:
+  ansible.builtin.apt:
     name: ntfs-3g
 
 - name: Allocate Servervault NTFS file
-  command: fallocate -l {{servervault_ntfspart_size}} "{{servervault_ntfspart}}"
+  ansible.builtin.command: fallocate -l {{ servervault_ntfspart_size }} "{{ servervault_ntfspart }}"
   args:
-    creates: "{{servervault_ntfspart}}"
-  register: fallocate
+    creates: "{{ servervault_ntfspart }}"
+  register: nwn2server_ntfs_fallocate
 
 - name: Write filesystem
-  command: /sbin/mkntfs -F "{{servervault_ntfspart}}"
-  # filesystem:
-  #   dev: "{{servervault_ntfspart}}"
-  #   fstype: ntfs
-  #   #ntfs-progs refuse to create filesystem on files
-  #   opts: "-F"
-  when: fallocate.changed
+  ansible.builtin.command: /sbin/mkntfs -F "{{ servervault_ntfspart }}"
+  changed_when: true
+  when: nwn2server_ntfs_fallocate.changed  # noqa: no-handler
 
 - name: Mount filesystem
-  mount:
-    path: "{{nwn2_path_root}}/home/servervault"
-    src: "{{servervault_ntfspart}}"
+  ansible.posix.mount:
+    path: "{{ nwn2_path_root }}/home/servervault"
+    src: "{{ servervault_ntfspart }}"
     fstype: ntfs
-    opts: "rw,exec,uid={{unprivileged_uid | string}},gid={{unprivileged_gid | string}},dmask=022,fmask=133"
+    opts: "rw,exec,uid={{ unprivileged_uid | string }},gid={{ unprivileged_gid | string }},dmask=022,fmask=133"
     state: mounted

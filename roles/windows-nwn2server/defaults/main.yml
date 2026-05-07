@@ -1,21 +1,23 @@
-production: False
+---
+
+production: false
 
 # Just checking windows updates can take a lot of time
-windows_update: False
+windows_update: false
 
 # Host unprivileged user info
 unprivileged_uid: 1000
-unprivileged_gid: "{{unprivileged_uid}}"
+unprivileged_gid: "{{ unprivileged_uid }}"
 
 # Host nwn2server path for NFS mounting
 nwn2_path_root: /srv/nwn2server
 
 # Change this path to set a custom dir to provision nwn2server additional DLL files (that can be versionned)
-nwn2_additional_dll_path: "{{playbook_dir}}/staging/nwn2server-dll"
+nwn2_additional_dll_path: "{{ playbook_dir }}/staging/nwn2server-dll"
 
 # Define this variable to download the nwn2server game files from another server (compressed zip format)
 # If set to "", it will upload the content from staging/nwn2server
 nwn2server_gamefiles_downloadurl: ""
 
-qemu_tap_network: "10.0.2.0"
-qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
+qemu_tap_network_prefix24: "10.0.2"
+qemu_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"

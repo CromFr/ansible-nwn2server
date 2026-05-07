@@ -1,36 +1,37 @@
-
-
-
+---
 
 - name: NWN2Server folder creation
-  file:
-    path: "{{item}}"
-    owner: "{{unprivileged_user}}"
-    group: "{{unprivileged_group}}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ unprivileged_user }}"
+    group: "{{ unprivileged_group }}"
+    mode: "0755"
     state: directory
   with_items:
-    - "{{nwn2_path_root}}"
-    - "{{nwn2_path_root}}/bin"
-    - "{{nwn2_path_root}}/logs"
-    - "{{nwn2_path_root}}/nwnx4"
-    - "{{nwn2_path_root}}/home"
-    - "{{nwn2_path_root}}/home/servervault"
-    - "{{nwn2_path_root}}/home/override"
+    - "{{ nwn2_path_root }}"
+    - "{{ nwn2_path_root }}/bin"
+    - "{{ nwn2_path_root }}/logs"
+    - "{{ nwn2_path_root }}/nwnx4"
+    - "{{ nwn2_path_root }}/home"
+    - "{{ nwn2_path_root }}/home/servervault"
+    - "{{ nwn2_path_root }}/home/override"
 
-# Shares
-- import_tasks: servervault-mount.yml
-- import_tasks: nfs-server.yml
+- name: NWN2 servervault mount
+  ansible.builtin.import_tasks: servervault-mount.yml
+- name: Windows/Linux NFS share
+  ansible.builtin.import_tasks: nfs-server.yml
 
-# MySQL server
-- import_tasks: sql.yml
+- name: MySQL server
+  ansible.builtin.import_tasks: sql.yml
 
-# NWN2 Home (Documents/Neverwinter Nights 2)
-- import_tasks: nwn2home.yml
+- name: NWN2 Home (Documents/Neverwinter Nights 2)
+  ansible.builtin.import_tasks: nwn2home.yml
 
-# NWNX4
-- import_tasks: nwnx4.yml
+- name: NWNX4
+  ansible.builtin.import_tasks: nwnx4.yml
 
-# Virtualization
-- import_tasks: qemu.yml
+- name: Windows virtual machine
+  ansible.builtin.import_tasks: qemu.yml
 
-- import_tasks: tooling.yml
+- name: NWN2 tooling
+  ansible.builtin.import_tasks: tooling.yml

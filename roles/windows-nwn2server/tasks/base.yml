@@ -1,29 +1,29 @@
-
+---
 
 - name: Windows Update
-  win_updates:
+  ansible.windows.win_updates:
     state: installed
-  when: windows_update == True
+  when: windows_update is true
   register: winupdate
 
 - name: Reboot windows to finish updates
-  win_reboot:
-  ignore_errors: yes
+  ansible.windows.win_reboot:
+  ignore_errors: true  # noqa: ignore-errors
   when:
-    - windows_update == True
+    - windows_update is true
     - winupdate.changed
 
 - name: Clean Windows Update packages
-  win_command: Dism.exe /online /Cleanup-Image /StartComponentCleanup
-  when: windows_update == True
+  ansible.windows.win_command: Dism.exe /online /Cleanup-Image /StartComponentCleanup
+  when: windows_update is true
 
 - name: Clean Windows Update service packs
-  win_command: Dism.exe /online /Cleanup-Image /SPSuperseded
-  when: windows_update == True
+  ansible.windows.win_command: Dism.exe /online /Cleanup-Image /SPSuperseded
+  when: windows_update is true
 
 - name: Install windows features
-  win_feature:
-    name: "{{item}}"
+  ansible.windows.win_feature:
+    name: "{{ item }}"
   with_items:
     - NFS-Client
     - RSAT-NFS-Admin
@@ -33,8 +33,8 @@
   when: windows_version == "win2012r2"
 
 - name: Install windows features
-  win_feature:
-    name: "{{item}}"
+  ansible.windows.win_feature:
+    name: "{{ item }}"
   with_items:
     - FS-NFS-Services
     - RSAT-NFS-Admin
@@ -44,105 +44,110 @@
   when: windows_version == "win2008r2"
 
 - name: Reboot windows to finish installing features
-  win_reboot:
-  ignore_errors: yes
-  when: windows_features.changed
+  ansible.windows.win_reboot:
+  ignore_errors: true  # noqa: ignore-errors
+  when: windows_features.changed # noqa: no-handler
 
 - name: Install chocolatey packages
-  win_chocolatey:
-    name: "{{item}}"
+  ansible.windows.win_chocolatey:
+    name: "{{ item }}"
   with_items:
     - autologon
     - sysinternals
     - vcredist2005
     - vcredist2010
-    - vcredist2013 #Needed for AuroraServerNWScript
-    - dotnet4.0 #Needed for AuroraServerNWScript
-    - dotnet4.5 #Needed for CLR scripts
-    - dotnet4.7 #Needed xp_bugfix TLS support
+    - vcredist2013  # Needed for AuroraServerNWScript
+    - dotnet4.0  # Needed for AuroraServerNWScript
+    - dotnet4.5  # Needed for CLR scripts
+    - dotnet4.7  # Needed xp_bugfix TLS support
     - directx
-  register: windows_packages
+  register: _nwn2server_windows_packages
 
 - name: Reboot windows to finish installing packages
-  win_reboot:
-  ignore_errors: yes
-  when: windows_packages.changed
+  ansible.windows.win_reboot:
+  ignore_errors: true  # noqa: ignore-errors
+  when: _nwn2server_windows_packages.changed # noqa: no-handler
 
-- win_stat:
+- name: Check if SPICE Guest Tools is installed
+  ansible.windows.win_stat:
     path: 'C:\Program Files (x86)\SPICE Guest Tools'
   register: chk_spiceinstall
-  ignore_errors: yes #This reinstalls KVM net drivers and cause read timeouts
+  ignore_errors: true  # noqa: ignore-errors - This reinstalls KVM net drivers and cause read timeouts
 
 - name: Download redhat driver certificates
-  win_copy: src="win-drivers-certs/{{item}}" dest=C:\
+  ansible.windows.win_copy:
+    src: "win-drivers-certs/{{ item }}"
+    dest: C:\
   with_items: &cert-list
     - redhat1.cer
     - redhat2.cer
     - redhat3.cer
-  when: chk_spiceinstall.stat.exists == False
+  when: chk_spiceinstall.stat.exists is false
 
 - name: Trust redhat driver certificates
-  win_command: certutil -addstore "TrustedPublisher" C:\{{item}}
+  ansible.windows.win_command: certutil -addstore "TrustedPublisher" C:\{{ item }}
   with_items: *cert-list
-  when: chk_spiceinstall.stat.exists == False
+  when: chk_spiceinstall.stat.exists is false
 
 - name: Remove installed certificates
-  win_file: path=C:\{{item}} state=absent
+  ansible.windows.win_file:
+    path: C:\{{ item }}
+    state: absent
   with_items: *cert-list
-  when: chk_spiceinstall.stat.exists == False
+  when: chk_spiceinstall.stat.exists is false
 
 
 - name: Spice guest tools
-  win_package:
+  ansible.windows.win_package:
     path: "https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe"
     arguments: "/S"
     creates_service: vdservice
-  when: chk_spiceinstall.stat.exists == False
+  when: chk_spiceinstall.stat.exists is false
 
 
 - name: Disable startup repair
-  win_command: "{{item}}"
+  ansible.windows.win_command: "{{ item }}"
   with_items:
     - "bcdedit /set {default} recoveryenabled No"
     - "bcdedit /set {default} bootstatuspolicy ignoreallfailures"
 
 
 - name: Setup Autologon
-  win_command: autologon {{ansible_user}} WORKGROUP {{ansible_password}}
+  ansible.windows.win_command: autologon {{ ansible_user }} WORKGROUP {{ ansible_password }}
 
 - name: "Enable ACPI shutdown: allow shutdown without login group policy"
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system'
     name: ShutdownWarningDialogTimeout
     type: dword
     data: "1"
 
 - name: "Enable ACPI shutdown: set shutdown timeout"
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows'
     name: ShutdownWarningDialogTimeout
     type: dword
     data: "1"
 
 - name: "Make Windows use BIOS time as UTC time"
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKLM:\System\CurrentControlSet\Control\TimeZoneInformation'
     name: RealTimeIsUniversal
     type: dword
     data: "1"
 
 - name: Wallpaper color
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKCU:\Control Panel\Colors'
     name: Background
     type: string
     data: "86 63 127"
-  when: production == True
+  when: production is true
 
 - name: Wallpaper solid color
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKCU:\Control Panel\Desktop'
     name: Wallpaper
     type: string
     data: ""
-  when: production == True
+  when: production is true

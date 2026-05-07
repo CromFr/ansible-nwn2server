@@ -1,8 +1,9 @@
+---
 
 - name: Install nwn-lib-d tools
-  unarchive:
+  ansible.builtin.unarchive:
     src: https://github.com/CromFr/nwn-lib-d/releases/latest/download/nwn-lib-d-tools-linux-x86_64.tar.xz
     dest: /usr/local/bin
-    mode: 0755
-    remote_src: yes
+    mode: "0755"
+    remote_src: true
     extra_opts: [--strip-components=1]

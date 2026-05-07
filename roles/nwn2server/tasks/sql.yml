@@ -1,25 +1,11 @@
-
-
-
-- name: Register mariadb apt key
-  apt_key:
-    url: https://mariadb.org/mariadb_release_signing_key.pgp
-  tags: [sql]
-
-- name: Add mariadb ppa
-  apt_repository:
-    repo: deb [arch=amd64] {{mariadb_mirror}}/{{mariadb_version}}/ubuntu {{ansible_distribution_release}} main
-    filename: mariadb
-    state: present
-  tags: [sql]
+---
 
 - name: Install MySQL package
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-server
       - mariadb-client
       - python3-pymysql
-    state: latest
   tags: [sql]
 
 - name: Set MySQL to listen on all interfaces
@@ -27,33 +13,34 @@
     path: /etc/mysql/mariadb.conf.d/99-nwn2server.cnf
     section: mysqld
     option: bind-address
-    value: '0.0.0.0' # Note: the UFW will filter connections
-  register: conf_changed
+    value: "127.0.0.1,{{ qemu_tap_network_prefix24 }}.0"
+    mode: "0644"
+  register: _nwn2server_conf_changed
   tags: [sql]
 
 - name: Start & enable MySQL service
-  systemd:
+  ansible.builtin.systemd_service:
     name: mariadb.service
-    state: "{{'restarted' if conf_changed.changed else 'started'}}"
-    enabled: yes
+    state: "{{ 'restarted' if _nwn2server_conf_changed.changed else 'started' }}"
+    enabled: true
   tags: [sql]
 
-- name: Add {{mysql_database}} database
-  mysql_db:
-    name: "{{mysql_database}}"
+- name: "Add mysql database {{ mysql_database }}"
+  community.mysql.mysql_db:
+    name: "{{ mysql_database }}"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
   tags: [sql]
 
 - name: Add MySQL User
-  mysql_user:
-    name: "{{mysql_user}}"
-    host: "{{item}}"
-    password: "{{mysql_password}}"
-    priv: "{{mysql_database}}.*:ALL"
+  community.mysql.mysql_user:
+    name: "{{ mysql_user }}"
+    host: "{{ item }}"
+    password: "{{ mysql_password }}"
+    priv: "{{ mysql_database }}.*:ALL"
     login_unix_socket: /var/run/mysqld/mysqld.sock
   with_items:
-    - "{{qemu_tap_network.split('.')[0:3] | join('.')}}.%"
+    - "{{ qemu_tap_network_prefix24 }}.%"
     - "localhost"
     - "127.0.0.1"
   tags: [sql]

@@ -1,14 +1,14 @@
-
+---
 
 - name: Install UFW
-  apt:
+  ansible.builtin.apt:
     name: ufw
 
 - name: "UFW: rate-limit SSH"
-  ufw:
+  community.general.ufw:
     rule: limit
     name: OpenSSH
 
 - name: "UFW: enable"
-  ufw:
+  community.general.ufw:
     state: enabled

@@ -1,58 +1,61 @@
+---
 
 - name: Create NWN2 folders
   become: true
-  become_user: "{{unprivileged_user}}"
-  file:
-    path: "{{item}}"
+  become_user: "{{ unprivileged_user }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
+    mode: "0755"
   with_items:
-    - "{{nwn2_path_root}}/home/campaigns"
-    - "{{nwn2_path_root}}/home/database"
-    - "{{nwn2_path_root}}/home/hak"
-    - "{{nwn2_path_root}}/home/modules"
-    - "{{nwn2_path_root}}/home/override"
-    - "{{nwn2_path_root}}/home/override.disk"
-    - "{{nwn2_path_root}}/home/pwc"
-    - "{{nwn2_path_root}}/home/saves"
-    - "{{nwn2_path_root}}/home/servervault"
-    - "{{nwn2_path_root}}/home/tlk"
+    - "{{ nwn2_path_root }}/home/campaigns"
+    - "{{ nwn2_path_root }}/home/database"
+    - "{{ nwn2_path_root }}/home/hak"
+    - "{{ nwn2_path_root }}/home/modules"
+    - "{{ nwn2_path_root }}/home/override"
+    - "{{ nwn2_path_root }}/home/override.disk"
+    - "{{ nwn2_path_root }}/home/pwc"
+    - "{{ nwn2_path_root }}/home/saves"
+    - "{{ nwn2_path_root }}/home/servervault"
+    - "{{ nwn2_path_root }}/home/tlk"
 
 - name: Create NWN2 override tmpfs backup folder
   become: true
-  become_user: "{{unprivileged_user}}"
-  file:
-    path: "{{nwn2_path_root}}/home/override.disk"
+  become_user: "{{ unprivileged_user }}"
+  ansible.builtin.file:
+    path: "{{ nwn2_path_root }}/home/override.disk"
     state: directory
+    mode: "0755"
   when: nwn2server_override_tmpfs
 
 - name: Setup tmpfs for override folder
-  mount:
-    path: "{{nwn2_path_root}}/home/override"
+  ansible.posix.mount:
+    path: "{{ nwn2_path_root }}/home/override"
     src: tmpfs
     fstype: tmpfs
-    opts: rw,nodev,nosuid,uid={{unprivileged_uid}},gid={{unprivileged_gid}},size={{nwn2server_override_maxsize}}
+    opts: rw,nodev,nosuid,uid={{ unprivileged_uid }},gid={{ unprivileged_gid }},size={{ nwn2server_override_maxsize }}
     state: mounted
-  register: override_tmpfs_setup
+  register: nwn2server_override_tmpfs_setup
   when: nwn2server_override_tmpfs
 
 - name: Copy tmpfs restore service file
-  template:
+  ansible.builtin.template:
     src: nwn2server-tmpfs-restore@.service.j2
     dest: /etc/systemd/system/nwn2server-tmpfs-restore@.service
-    mode: 0644
+    mode: "0644"
   when: nwn2server_override_tmpfs
 
 - name: Enable tmpfs restore service
-  systemd:
-    name: nwn2server-tmpfs-restore@{{nwn2_path_root | basename}}.service
+  ansible.builtin.systemd_service:
+    name: nwn2server-tmpfs-restore@{{ nwn2_path_root | basename }}.service
     state: started
-    enabled: yes
-  when: nwn2server_override_tmpfs and override_tmpfs_setup.changed
+    enabled: true
+  when: nwn2server_override_tmpfs and nwn2server_override_tmpfs_setup.changed
 
 - name: Write nwn2player.ini
   become: true
-  become_user: "{{unprivileged_user}}"
-  template:
+  become_user: "{{ unprivileged_user }}"
+  ansible.builtin.template:
     src: nwn2player.ini.j2
-    dest: "{{nwn2_path_root}}/home/nwn2player.ini"
-    mode: 0644
+    dest: "{{ nwn2_path_root }}/home/nwn2player.ini"
+    mode: "0644"

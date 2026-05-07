@@ -1,4 +1,4 @@
-
+---
 
 unprivileged_user: nwn2
 unprivileged_uid: 1000
@@ -6,8 +6,8 @@ unprivileged_group: "{{unprivileged_user}}"
 unprivileged_gid: "{{unprivileged_uid}}"
 
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
-qemu_tap_network: "10.0.2.0"
-qemu_tap_network_host: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.1"
+qemu_tap_network_prefix24: "10.0.2"
+qemu_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"
 
 # true to control the Windows VM using SSH server instead of WinRM
 # Note: setting this to true requires you to manually install a ssh server on the windows VM
@@ -20,7 +20,7 @@ nwn2_path_root: /srv/nwn2server
 # network, and not the first address of the network.
 # Note: the last number will be used to set the
 # virtual machine mac address
-nwn2server_private_ip: "{{qemu_tap_network.split('.')[0:3] | join('.')}}.10"
+nwn2server_private_ip: "{{ qemu_tap_network_prefix24 }}.10"
 # The port used to connect to the nwn2server from the outside. Internally the
 # nwn2server VM will always listen to 5121, and the host will forward ports to
 # the appropriate VM
@@ -47,7 +47,7 @@ nwnx4_upstream: "https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4
 nwnx4_nwn2server_parameters: "-moduledir YourModule"
 nwnx4_mysql_loglevel: "2"
 # Change this path to set a custom dir to provision nwnx4 additional plugins & configuration (that can be versionned)
-nwnx4_additional_plugin_path: "{{playbook_dir}}/staging/nwnx4_plugins"
+nwnx4_additional_plugin_path: "{{ playbook_dir }}/staging/nwnx4_plugins"
 
 # HTTP/HTTPS/FTP url to download the compressed windows disk image.
 # If it is a local file path, it will send from your system (can be very slow)
@@ -70,7 +70,7 @@ qemu_spice_port: 3389
 # MySQL host address in the tap0 network. should not be changed.
 mariadb_mirror: "https://ftp.igh.cnrs.fr/pub/mariadb/repo"
 mariadb_version: "10.6"
-mysql_host: "{{qemu_tap_network_host}}"
+mysql_host: "{{ qemu_tap_network_host }}"
 mysql_database: "nwnx"
 mysql_user: "nwnx"
 mysql_password: "password"
@@ -78,10 +78,9 @@ mysql_password: "password"
 # This partition will be mounted and will contain the servervault content.
 # NTFS is needed in order to have a correctly sorted character list.
 # This partition will be mounted in "{{nwn2_home}}/servervault"
-servervault_ntfspart: "{{nwn2_path_root}}/servervault.ntfs"
+servervault_ntfspart: "{{ nwn2_path_root }}/servervault.ntfs"
 # Size of the partition hosting the servervault
 servervault_ntfspart_size: 2G
-
 
 # Virtual machine windows access configuration
 windows_user: Administrator

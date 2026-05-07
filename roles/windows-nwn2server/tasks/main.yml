@@ -1,13 +1,13 @@
+---
 
+- name: Base windows config
+  ansible.builtin.import_tasks: base.yml
 
+- name: NFS client setup
+  ansible.builtin.import_tasks: nfs-mount.yml
 
+- name: NWN2Server install
+  ansible.builtin.import_tasks: nwn2server.yml
 
-
-- import_tasks: base.yml
-
-- import_tasks: nfs-mount.yml
-
-- import_tasks: nwn2server.yml
-
-- import_tasks: startup.yml
-
+- name: NWN2Server autostart config
+  ansible.builtin.import_tasks: startup.yml

@@ -1,9 +1,9 @@
-
+---
 
 - name: Set NFS anon user / gid
-  win_regedit:
+  ansible.windows.win_regedit:
     path: 'HKLM:\SOFTWARE\Microsoft\ClientForNFS\CurrentVersion\Default'
-    name: "{{item}}"
+    name: "{{ item }}"
     type: dword
     data: 1000
   with_items:
@@ -12,15 +12,15 @@
 
 # This allows symlinks inside the NFS mount to be followed
 - name: Allow Remote to Remote symlinks
-  win_shell: fsutil behavior set SymlinkEvaluation R2R:1
+  ansible.windows.win_shell: fsutil behavior set SymlinkEvaluation R2R:1
 
 - name: Check if network mappings are mounted
-  win_shell: 'Test-Path Z:\'
+  ansible.windows.win_shell: 'Test-Path Z:\'
   register: chk
-  failed_when: chk.stdout_lines[0] != "True"
-  ignore_errors: yes
-  changed_when: False
+  failed_when: chk.stdout_lines[0] is not true
+  ignore_errors: true
+  changed_when: false
 
 - name: Mount network drive
-  win_shell: 'psexec -i 1 -s net use Z: "\\{{qemu_tap_network_host}}{{nwn2_path_root}}" /persistent:yes'
+  ansible.windows.win_shell: 'psexec -i 1 -s net use Z: "\\{{ qemu_tap_network_host }}{{ nwn2_path_root }}" /persistent:yes'
   when: chk is failed
