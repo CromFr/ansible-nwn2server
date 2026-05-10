@@ -1,14 +1,5 @@
 ---
 
-- name: Enable universe & multiverse package repository
-  ansible.builtin.apt_repository:
-    repo: deb http://archive.ubuntu.com/ubuntu {{ item }} universe multiverse
-    state: present
-  with_items:
-    - "{{ ansible_distribution_release }}"
-    - "{{ ansible_distribution_release }}-security"
-    - "{{ ansible_distribution_release }}-updates"
-
 - name: Packages install
   ansible.builtin.apt:
     name:

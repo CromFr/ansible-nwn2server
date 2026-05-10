@@ -3,15 +3,16 @@
 - name: Qemu Packages install
   ansible.builtin.apt:
     name:
-      - qemu-kvm
+      - qemu-system-x86
       - qemu-utils
       - python3
       - python3-winrm
 
 - name: Check if qemu disk is present
-  ansible.builtin.command: ls "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
+  ansible.builtin.stat:
+    path: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   ignore_errors: true
-  register: _nwn2server_chk_qemudisk
+  register: _nwn2server_stat_qemudisk
   changed_when: false
 
 - name: Extract Qemu compressed disk from target disk
@@ -19,8 +20,17 @@
   args:
     creates: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   when:
-    - _nwn2server_chk_qemudisk is failed
+    - _nwn2server_stat_qemudisk.stat.exists is false
     - qemu_disk_download_url | urlsplit('scheme') == ''
+
+- name: Upload local qemu compressed disk to target
+  ansible.builtin.copy:
+    src: "{{ qemu_disk_download_url | urlsplit('path') }}"
+    dest: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}{{ (qemu_disk_download_url | urlsplit('path') | splitext)[1] }}"
+    mode: "0600"
+  when:
+    - _nwn2server_stat_qemudisk.stat.exists is false
+    - qemu_disk_download_url | urlsplit('scheme') == 'file'
 
 - name: Download Qemu compressed disk from URL
   ansible.builtin.get_url:
@@ -28,8 +38,9 @@
     dest: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}{{ (qemu_disk_download_url | urlsplit('path') | splitext)[1] }}"
     mode: "0600"
   when:
-    - _nwn2server_chk_qemudisk is failed
+    - _nwn2server_stat_qemudisk.stat.exists is false
     - qemu_disk_download_url | urlsplit('scheme') != ''
+    - qemu_disk_download_url | urlsplit('scheme') != 'file'
 
 - name: Extract Qemu disk
   ansible.builtin.command:
@@ -37,7 +48,7 @@
   args:
     creates: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
   when:
-    - _nwn2server_chk_qemudisk is failed
+    - _nwn2server_stat_qemudisk.stat.exists is false
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
 
@@ -53,20 +64,20 @@
   args:
     creates: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
   register: _nwn2server_ssh_keygen
-  when: nwn2server_qemu_ssh_control
+  when: qemu_ssh_control
 
 - name: Set SSH key permissions
   ansible.builtin.file:
     path: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
     group: "{{ unprivileged_group }}"
     mode: "0600"
-  when: nwn2server_qemu_ssh_control
+  when: qemu_ssh_control
 
 - name: Retrieve generated SSH public key nwn2server-ssh-key.pub
   ansible.builtin.fetch:
     src: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key.pub"
     dest: "ssh-keys/"
-  when: _nwn2server_ssh_keygen.changed and nwn2server_qemu_ssh_control
+  when: _nwn2server_ssh_keygen.changed and qemu_ssh_control
 
 - name: Copy controller script
   ansible.builtin.template:

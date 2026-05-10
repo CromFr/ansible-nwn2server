@@ -23,6 +23,7 @@
     src: "/var/ansible-nwn2server/nwnx4.zip"
     dest: "{{ nwn2_path_root }}"
     remote_src: true
+    creates: "{{ nwn2_path_root }}/nwnx4"
 
 - name: Install nwnx4 config files
   ansible.builtin.template:

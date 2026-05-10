@@ -58,11 +58,11 @@
       RemainAfterExit=yes
       ExecStartPre=-/sbin/ip addr add {{ qemu_tap_network_host }}/24 dev tap0
       ExecStartPre=/bin/bash -c " \
-        (iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE \
-        || iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE) \
+        (iptables -t nat -A POSTROUTING -o {{ ansible_facts['default_ipv4'].interface }} -j MASQUERADE \
+        || iptables -t nat -A POSTROUTING -o {{ ansible_facts['default_ipv4'].interface }} -j MASQUERADE) \
         && \
-        (iptables -C FORWARD -i tap0 -o {{ ansible_default_ipv4.interface }} -j ACCEPT \
-          || iptables -A FORWARD -i tap0 -o {{ ansible_default_ipv4.interface }} -j ACCEPT) \
+        (iptables -C FORWARD -i tap0 -o {{ ansible_facts['default_ipv4'].interface }} -j ACCEPT \
+          || iptables -A FORWARD -i tap0 -o {{ ansible_facts['default_ipv4'].interface }} -j ACCEPT) \
         "
       ExecStart=/sbin/ip link set tap0 up
 

@@ -113,7 +113,7 @@
 
 
 - name: Setup Autologon
-  ansible.windows.win_command: autologon {{ ansible_user }} WORKGROUP {{ ansible_password }}
+  ansible.windows.win_command: autologon {{ ansible_facts['user'] }} WORKGROUP {{ ansible_facts['password'] }}
 
 - name: "Enable ACPI shutdown: allow shutdown without login group policy"
   ansible.windows.win_regedit:
