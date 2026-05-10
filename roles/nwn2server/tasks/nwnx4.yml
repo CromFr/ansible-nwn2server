@@ -1,38 +1,110 @@
 ---
 
-- name: Create dir for storing nwnx4 zip file
+- name: Create nwnx4 release cache directory
   ansible.builtin.file:
-    path: "/var/ansible-nwn2server/"
+    path: "/var/cache/ansible-nwn2server/"
     state: directory
     mode: "0755"
 
-- name: Create nwnx4 user config dir
+- name: Download NWNX4 release archive
+  ansible.builtin.get_url:
+    url: "{{ nwnx4_upstream }}"
+    dest: "/var/cache/ansible-nwn2server/nwnx4.zip"
+    mode: "0644"
+  register: _nwn2server_nwnx_new_release
+
+- name: Clean previous nwnx4 install dir
+  ansible.builtin.file:
+    path: "{{ nwn2_path_root }}/nwnx4-install"
+    state: absent
+  when: _nwn2server_nwnx_new_release.changed # noqa: no-handler
+
+- name: Create nwnx4 install dir
+  ansible.builtin.file:
+    path: "{{ nwn2_path_root }}/nwnx4-install"
+    state: directory
+    mode: "0755"
+  when: _nwn2server_nwnx_new_release.changed # noqa: no-handler
+
+- name: Extract NWNX4 release archive
+  ansible.builtin.unarchive:
+    remote_src: "{{ qemu_disk_download_url | urlsplit('scheme') != '' }}"
+    src: "/var/cache/ansible-nwn2server/nwnx4.zip"
+    dest: "{{ nwn2_path_root }}/nwnx4-install/"
+  when: _nwn2server_nwnx_new_release.changed # noqa: no-handler
+
+- name: Check if the nwnx4 install folder is populated
+  ansible.builtin.stat:
+    path: "{{ nwn2_path_root }}/nwnx4-install/nwnx4/"
+  register: _nwn2server_nwnx_wrapped_in_folder
+  when: _nwn2server_nwnx_new_release.changed # noqa: no-handler
+
+- name: Handle cases where the zip only contains a nwnx4 folder
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ nwn2_path_root }}/nwnx4-install/nwnx4/."
+    dest: "{{ nwn2_path_root }}/nwnx4-install/"
+    mode: "0755"
+  when:
+    - _nwn2server_nwnx_new_release.changed
+    - _nwn2server_nwnx_wrapped_in_folder.stat.isdir
+
+- name: Handle cases where the zip only contains a nwnx4 folder (cleaning)
+  ansible.builtin.file:
+    path: "{{ nwn2_path_root }}/nwnx4-install/nwnx4/"
+    state: absent
+  when:
+    - _nwn2server_nwnx_new_release.changed
+    - _nwn2server_nwnx_wrapped_in_folder.stat.isdir
+
+
+- name: Create nwnx4 user directory
   ansible.builtin.file:
     path: "{{ nwn2_path_root }}/nwnx4-user/"
     state: directory
     mode: "0755"
+    owner: "{{ unprivileged_user }}"
+    group: "{{ unprivileged_user }}"
+  register: _nwn2server_nwnx4_user_created
 
-- name: Download latest nwnx4 release
-  ansible.builtin.get_url:
-    url: "{{ nwnx4_upstream }}"
-    dest: /var/ansible-nwn2server/nwnx4.zip
-    mode: "0644"
-
-- name: Extract NWNX4
-  ansible.builtin.unarchive:
-    src: "/var/ansible-nwn2server/nwnx4.zip"
-    dest: "{{ nwn2_path_root }}"
+- name: Install example config files
+  ansible.builtin.copy:
     remote_src: true
-    creates: "{{ nwn2_path_root }}/nwnx4"
+    src: "{{ nwn2_path_root }}/nwnx4-install/config.example/"
+    dest: "{{ nwn2_path_root }}/nwnx4-user/"
+    mode: preserve
+  when: _nwn2server_nwnx4_user_created.changed # noqa: no-handler
 
-- name: Install nwnx4 config files
-  ansible.builtin.template:
-    src: "{{ item }}"
-    dest: "{{ nwn2_path_root }}/nwnx4-user/{{ (item | basename | splitext)[0] }}"
-    mode: "0644"
+
+- name: "Adjust nwnx4 config: nwnx.ini"
+  community.general.ini_file:
+    path: "{{ nwn2_path_root }}/nwnx4-user/nwnx.ini"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    create: false
   with_items:
-    - nwnx.ini.j2
-    - xp_mysql.ini.j2
+    # yamllint disable rule:commas
+    - {key: plugin_list, value: "{{ nwnx4_pluginlist }}"}
+    - {key: parameters,  value: "{{ nwnx4_nwn2server_parameters }}"}
+    - {key: nwn2,        value: "C:\\nwn2server"}
+    - {key: nwn2temp,    value: "C:\\nwn2logs"}
+    # yamllint enable rule:commas
+  when: _nwn2server_nwnx4_user_created.changed # noqa: no-handler
+
+- name: "Adjust nwnx4 config: xp_mysql.ini"
+  community.general.ini_file:
+    path: "{{ nwn2_path_root }}/nwnx4-user/nwnx.ini"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    create: false
+  with_items:
+    # yamllint disable rule:commas
+    - {key: server,   value: "{{ mysql_host }}"}
+    - {key: user,     value: "{{ mysql_user }}"}
+    - {key: password, value: "{{ mysql_password }}"}
+    - {key: schema,   value: "{{ mysql_database }}"}
+    # yamllint enable rule:commas
+  when: _nwn2server_nwnx4_user_created.changed # noqa: no-handler
 
 - name: Install additional nwnx4 plugin dll files
   ansible.builtin.copy:
@@ -51,7 +123,7 @@
   with_fileglob:
     - "{{ nwnx4_additional_plugin_path }}/*.ini"
 
-- name: Install additional nwnx4 config ansible.builtin.templates
+- name: Install additional nwnx4 config templates
   ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ nwn2_path_root }}/nwnx4-user/{{ (item | basename | splitext)[0] }}"

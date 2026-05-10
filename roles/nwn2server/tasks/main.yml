@@ -11,7 +11,6 @@
     - "{{ nwn2_path_root }}"
     - "{{ nwn2_path_root }}/bin"
     - "{{ nwn2_path_root }}/logs"
-    - "{{ nwn2_path_root }}/nwnx4"
     - "{{ nwn2_path_root }}/home"
     - "{{ nwn2_path_root }}/home/servervault"
     - "{{ nwn2_path_root }}/home/override"
