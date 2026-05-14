@@ -22,5 +22,5 @@
   changed_when: false
 
 - name: Mount network drive
-  ansible.windows.win_shell: 'psexec -i 1 -s net use Z: "\\{{ qemu_tap_network_host }}{{ nwn2_path_root }}" /persistent:yes'
+  ansible.windows.win_shell: 'psexec -i 1 -s net use Z: "\\{{ virt_tap_network_host }}{{ nwn2_path_root }}" /persistent:yes'
   when: chk is failed

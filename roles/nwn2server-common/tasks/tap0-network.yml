@@ -12,6 +12,10 @@
       [NetDev]
       Name=tap0
       Kind=tap
+
+      [TAP]
+      User=libvirt-qemu
+      Group=libvirt-qemu
     mode: "0644"
   register: _nwn2server_tap0_netdev
 
@@ -23,12 +27,12 @@
       Name=tap0
 
       [Link]
-      MACAddress=52:55:00:d1:55:{{ "%02x" | format(qemu_tap_network_host.split(".")[3] | int) }}
+      MACAddress=52:55:00:d1:55:{{ "%02x" | format(virt_tap_network_host.split(".")[3] | int) }}
       RequiredForOnline=no
 
       [Network]
-      Description=QEMU dedicated network
-      Address={{ qemu_tap_network_host }}/24
+      Description=Network for NWN2 virtual machines
+      Address={{ virt_tap_network_host }}/24
       LinkLocalAddressing=ipv4
       IPForward=ipv4
       IPMasquerade=yes
@@ -56,7 +60,7 @@
       [Service]
       Type=oneshot
       RemainAfterExit=yes
-      ExecStartPre=-/sbin/ip addr add {{ qemu_tap_network_host }}/24 dev tap0
+      ExecStartPre=-/sbin/ip addr add {{ virt_tap_network_host }}/24 dev tap0
       ExecStartPre=/bin/bash -c " \
         (iptables -t nat -A POSTROUTING -o {{ ansible_facts['default_ipv4'].interface }} -j MASQUERADE \
         || iptables -t nat -A POSTROUTING -o {{ ansible_facts['default_ipv4'].interface }} -j MASQUERADE) \
@@ -84,11 +88,12 @@
     block: |
       interface=tap0
       except-interface=lo
-      listen-address={{ qemu_tap_network_host }}
+      listen-address={{ virt_tap_network_host }}
       bind-interfaces
       cache-size=1000
+      server=127.0.0.53 # systemd-resolved
 
-      dhcp-option=6,{{ qemu_tap_network_host }} # DNS server
+      dhcp-option=6,{{ virt_tap_network_host }} # DNS server
       dhcp-range={{ qemu_tap_network_prefix24 }}.100,{{ qemu_tap_network_prefix24 }}.200,255.255.255.0
       dhcp-authoritative
     mode: "0644"

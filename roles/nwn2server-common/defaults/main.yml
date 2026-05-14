@@ -9,4 +9,4 @@ install_nwnlibd_tools: true
 
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
 qemu_tap_network_prefix24: "10.0.2"
-qemu_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"
+virt_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"

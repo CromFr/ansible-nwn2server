@@ -1,19 +1,13 @@
 ---
 
-- name: Qemu Packages install
-  ansible.builtin.apt:
-    name:
-      - qemu-system-x86
-      - qemu-utils
-      - python3
-      - python3-winrm
-
+#
+# -------------------- Disk image
+#
 - name: Check if qemu disk is present
   ansible.builtin.stat:
     path: "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
-  ignore_errors: true
+    get_checksum: false
   register: _nwn2server_stat_qemudisk
-  changed_when: false
 
 - name: Extract Qemu compressed disk from target disk
   ansible.builtin.shell: xz -d -T0 --stdout "{{ qemu_disk_download_url }}" > "{{ nwn2_path_root }}/nwn2server-vmdisk.{{ qemu_disk_format }}"
@@ -51,51 +45,41 @@
     - _nwn2server_stat_qemudisk.stat.exists is false
     - qemu_disk_download_url | urlsplit('scheme') != ''
 
+#
+# -------------------- Libvirt config
+#
+- name: Install libvirt hook for redirecting ports
+  ansible.builtin.copy:
+    dest: /etc/libvirt/hooks-custom/before-
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
 
-- name: Copy nwn2server launch script
-  ansible.builtin.template:
-    src: qemu-launch.j2
-    dest: "{{ nwn2_path_root }}/bin/launch"
-    mode: "0755"
+      # Setup nwn2server port forwarding
+      if ! iptables -t nat -C PREROUTING -p udp --dport {{ nwn2server_public_port }} -j DNAT --to {{ nwn2server_private_ip }}:5121; then
+        iptables -t nat -A PREROUTING -p udp --dport {{ nwn2server_public_port }} -j DNAT --to {{ nwn2server_private_ip }}:5121
+      fi
+      if ! iptables -C FORWARD -d {{ nwn2server_private_ip }} -p udp --dport 5121 -j ACCEPT; then
+       	iptables -A FORWARD -d {{ nwn2server_private_ip }} -p udp --dport 5121 -j ACCEPT
+      fi
 
-- name: Generate SSH key for controlling the VM
-  become: true
-  ansible.builtin.command: ssh-keygen -P "" -C vm-remote-control@{{ ansible_hostname }} -t ed25519 -f {{ nwn2_path_root }}/bin/nwn2server-ssh-key
-  args:
-    creates: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
-  register: _nwn2server_ssh_keygen
-  when: qemu_ssh_control
+- name: Install VM XML
+  community.libvirt.virt:
+    name: nwn2server-{{ nwn2_path_root | basename }}
+    command: define
+    autostart: true
+    xml: "{{ lookup('template', 'libvirt.xml.j2') }}"
 
-- name: Set SSH key permissions
-  ansible.builtin.file:
-    path: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key"
-    group: "{{ unprivileged_group }}"
-    mode: "0600"
-  when: qemu_ssh_control
 
-- name: Retrieve generated SSH public key nwn2server-ssh-key.pub
-  ansible.builtin.fetch:
-    src: "{{ nwn2_path_root }}/bin/nwn2server-ssh-key.pub"
-    dest: "ssh-keys/"
-  when: _nwn2server_ssh_keygen.changed and qemu_ssh_control
-
+#
+# -------------------- Misc
+#
 - name: Copy controller script
   ansible.builtin.template:
     src: nwn2server-controller.j2
     dest: "{{ nwn2_path_root }}/bin/nwn2server-controller"
     mode: "0755"
-
-- name: Copy nwn2server service file
-  ansible.builtin.template:
-    src: nwn2server@.service.j2
-    dest: /etc/systemd/system/nwn2server@.service
-    mode: "0644"
-
-- name: Enable & start nwn2server
-  ansible.builtin.systemd_service:
-    name: "nwn2server@{{ nwn2_path_root | basename }}.service"
-    state: started
-    enabled: true
 
 - name: "UFW: Enable NWN2Server port"
   community.general.ufw:

@@ -30,7 +30,7 @@
   ansible.builtin.import_tasks: nwnx4.yml
 
 - name: Windows virtual machine
-  ansible.builtin.import_tasks: qemu.yml
+  ansible.builtin.import_tasks: libvirt.yml
 
 - name: NWN2 tooling
   ansible.builtin.import_tasks: tooling.yml

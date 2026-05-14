@@ -1,0 +1,45 @@
+---
+
+- name: Qemu Packages install
+  ansible.builtin.apt:
+    name:
+      - qemu-system-x86
+      - qemu-utils
+      - python3-winrm  # remote control
+      - libvirt-daemon-system
+      - python3-libvirt  # needed for community.libvirt.virt
+      - python3-lxml  # needed for community.libvirt.virt
+
+- name: Create libvirt hooks dir
+  ansible.builtin.file:
+    path: "/etc/libvirt/hooks-custom/"
+    state: directory
+    mode: "0755"
+
+- name: Install libvirt hook script dispatcher
+  ansible.builtin.copy:
+    dest: /etc/libvirt/hooks/qemu
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+
+      export GUEST_NAME="$1"
+      export OPERATION="$2"
+      export SUBOP="$3"
+
+      if [[ "$SUBOP" == "begin" ]]; then
+        SCRIPT="/etc/libvirt/hooks-custom/before-${OPERATION}-${GUEST_NAME}"
+      elif [[ "$SUBOP" == "end" ]]; then
+        SCRIPT="/etc/libvirt/hooks-custom/after-${OPERATION}-${GUEST_NAME}"
+      fi
+
+      if [ -f "$SCRIPT" ]; then
+        "$SCRIPT"
+      fi
+
+- name: Enable & start libvirtd
+  ansible.builtin.systemd_service:
+    name: "libvirtd.service"
+    state: started
+    enabled: true

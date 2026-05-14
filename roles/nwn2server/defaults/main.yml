@@ -7,7 +7,7 @@ unprivileged_gid: "{{ unprivileged_uid }}"
 
 # Network IP reserved to Qemu VMs. Must be a /24 IP.
 qemu_tap_network_prefix24: "10.0.2"
-qemu_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"
+virt_tap_network_host: "{{ qemu_tap_network_prefix24 }}.1"
 
 # true to control the Windows VM using SSH server instead of WinRM
 # Note: setting this to true requires you to manually install a ssh server on the windows VM
@@ -59,10 +59,10 @@ qemu_disk_format: "raw"
 
 # Qemu processor allocation (-smp arg).
 # NWN2Server uses only 1 thread, but more CPU can be allocated to take care of windows tasks.
-qemu_smp: "cores=1,threads=1,sockets=1"
+vm_cpu_cores: 2
 
 # Amount of RAM dedicated to the VM
-qemu_memory: "2.5G"
+vm_memory_MiB: 2560
 
 # Remote desktop port
 qemu_spice_port: 3389
@@ -70,7 +70,7 @@ qemu_spice_port: 3389
 # MySQL host address in the tap0 network. should not be changed.
 mariadb_mirror: "https://ftp.igh.cnrs.fr/pub/mariadb/repo"
 mariadb_version: "10.6"
-mysql_host: "{{ qemu_tap_network_host }}"
+mysql_host: "{{ virt_tap_network_host }}"
 mysql_database: "nwnx"
 mysql_user: "nwnx"
 mysql_password: "password"

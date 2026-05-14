@@ -24,20 +24,15 @@
     group: "{{ unprivileged_group }}"
   tags: [base]
 
-# - name: Add your local SSH key to the server authorized keys
-#   ansible.builtin.authorized_key:
-#     user: "{{ unprivileged_user }}"
-#     key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
-#   tags: [base]
-
-
-# UFW
 - name: UFW Setup
   ansible.builtin.include_tasks: ufw.yml
   tags: [base]
 
-# qemu network
-- name: Qemu network setup
+- name: Libvirt common config
+  ansible.builtin.include_tasks: libvirt.yml
+  tags: [base]
+
+- name: VM network setup
   ansible.builtin.include_tasks: tap0-network.yml
   tags: [base]
 
